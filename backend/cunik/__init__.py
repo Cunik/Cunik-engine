@@ -1,6 +1,5 @@
 """Implementation of interfaces like create."""
 
-import backend.cunik.utils as utils
 import backend.vm as vm
 
 
