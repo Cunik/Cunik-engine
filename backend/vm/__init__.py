@@ -1,4 +1,2 @@
 """Unified vm interface."""
-
-import libvirt
-import sys
+from .vm import *

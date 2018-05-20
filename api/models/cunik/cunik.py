@@ -1,37 +1,54 @@
 """class Cunik."""
 
+from api.models.image import ImageRegistry
+from backend.vm import VM
+
 
 class CunikConfig:
-    """Config of a Cunik, constructed when the user wants to create a Cunik."""
+    """Config of a cunik, constructed when the user wants to create a Cunik."""
+    def __init__(self, **kwargs):
+        self.name = kwargs['name']
+        self.image = kwargs['image']
+        self.cmd = kwargs['cmd']
+
+
+class CunikRegistry:
+    """Local cunik registry."""
     def __init__(self):
         pass
 
 
 class Cunik:
-    """Represent an existing Cunik."""
-    @staticmethod
-    def create(config: CunikConfig):
-        """Create a Cunik according to the config."""
-        # Deal with the config using unikernel backends
-        # Create virtual machine using vm backends
-        # Register in the Cunik registry
-        pass
+    """Represent a cunik.
 
-    @staticmethod
-    def destroy(cunik: Cunik):
-        """Destroy a Cunik according to the config."""
-        # Stop the vm
-        # Delete it from Cunik registry.
-        pass
+    All the public methods of this class will immediately
+    affect cunik registry and virtual machine unless it raises an exception.
 
-    def __init__(self):
-        """Take configuration and create a Cunik(vm with unikernel)."""
-        pass
+    Usage:
+        >>> cu = Cunik(...)  # Now there is a new cunik in cunik registry along with the vm instance
+        >>> cu.start()  # Now it starts, and the new status is updated in cunik registry
+        >>> cu.stop()
+        >>> del cu  # NOTICE: This really destroys corresponding vm and remove this cunik from registry
+    """
+    def __init__(self, config: CunikConfig):
+        # Create the vm with the image
+        self.vm = VM(config)
+        # Register the cunik in the registry
 
     def start(self):
-        """Start the Cunik."""
-        pass
+        """Start the cunik."""
+        # Start the vm
+        self.vm.start()
+        # Update in registry
 
     def stop(self):
-        """Stop the Cunik."""
-        pass
+        """Stop the cunik."""
+        # Stop the vm
+        self.vm.stop()
+        # Update in registry
+
+    def __del__(self):
+        """Destroy a cunik according to the config."""
+        # Destroy the vm
+        self.vm.destroy()
+        # Remove from registry
