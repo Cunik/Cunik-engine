@@ -22,7 +22,7 @@ class VMConfig:
         >>> vmc = VMConfig()  # A new VMConfig with default parameters, and key parameters are None
         >>> vmc.name = 'Cunik0'
         >>> vmc.image_path = './example.img'  # This has to be set
-        >>> vmc.memory_size = 1024  # Size in MB
+        >>> vmc.memory_size = 1024  # Memory size in KB
         >>> vmc.hypervisor = 'kvm'  # VM type
         >>> vmc.to_xml()  # Convert to XML for libvirt
     """
