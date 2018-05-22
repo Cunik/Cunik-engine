@@ -97,7 +97,7 @@ class VM:
         >>> vm = VM(vmc)  # Now there is a new cunik in cunik registry along with the vm instance
         >>> vm.start()
         >>> vm.stop()
-        >>> vm.destroy()
+        >>> del vm  # Now this vm disappears
     """
     def __init__(self, config: VMConfig):
         # TODO: should we define then start or just create?
@@ -115,8 +115,5 @@ class VM:
     def stop(self):
         self.domain.suspend()
 
-    def destroy(self):
-        try:
-            self.domain.destroy()
-        finally:
-            self.domain.undefine()
+    def __del__(self):
+        self.domain.undefine()
