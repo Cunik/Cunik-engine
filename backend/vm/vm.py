@@ -95,6 +95,7 @@ class VM:
         >>> vmc = VMConfig()
         >>> # ...
         >>> vm = VM(vmc)  # Now there is a new cunik in cunik registry along with the vm instance
+        >>> uuid = vm.uuid  # Unique between all hosts, can be used to identify
         >>> vm.start()
         >>> vm.stop()
         >>> del vm  # Now this vm disappears
@@ -103,6 +104,7 @@ class VM:
         # TODO: should we define then start or just create?
         conn = lv.open('')  # TODO: set URI by vm type
         self.domain = conn.defineXML(config.to_xml())
+        self.uuid = self.domain.UUIDString()
         conn.close()
 
     def start(self):
