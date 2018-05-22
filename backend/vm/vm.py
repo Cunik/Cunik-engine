@@ -116,4 +116,8 @@ class VM:
         self.domain.suspend()
 
     def __del__(self):
-        self.domain.undefine()
+        # This is necessary because the vm may not be running
+        try:
+            self.domain.destroy()
+        finally:
+            self.domain.undefine()
