@@ -7,28 +7,49 @@ class InvalidVMConfigError(Exception):
         return 'Invalid VM config, perhaps some vital parameters haven\'t been set.'
 
 
+class UnknownHypervisorError(Exception):
+    def __init__(self, hv):
+        self.__hv = hv
+
+    def __str__(self):
+        return 'Unknown hypervisor {0}, not in {1}.'.format(self.__hv, VMConfig.available_hypervisors)
+
+
 class VMConfig:
     """The handy representation of VM configuration.
 
     Usage:
         >>> vmc = VMConfig()  # A new VMConfig with default parameters, and key parameters are None
-        >>> vmc.set_image_path('./example.img')  # This has to be set
-        >>> vmc.set_memory_size(1024)  # Size in MB
-        >>> vmc.set_vm_type('kvm')  # VM type
+        >>> vmc.name = 'Cunik0'
+        >>> vmc.image_path = './example.img'  # This has to be set
+        >>> vmc.memory_size = 1024  # Size in MB
+        >>> vmc.hypervisor = 'kvm'  # VM type
         >>> vmc.to_xml()  # Convert to XML for libvirt
     """
+    available_hypervisors = ['kvm']
+    
     def __init__(self):
         self.name = None
         self.image_path = None
         self.cmdline = ''
         self.memory_size = 1024
-        self.vm_type = None
+        self.__hypervisor = None
+
+    @property
+    def hypervisor(self):
+        return self.__hypervisor
+
+    @hypervisor.setter
+    def hypervisor(self, hv):
+        if hv not in self.available_hypervisors:
+            raise UnknownHypervisorError
+        self.__hypervisor = hv
 
     def __check(self):
         """Check if non-default parameters have been set.
             By non-default, I mean that it is None by default and have to be set before generation XML.
         """
-        return all([self.name, self.image_path, self.vm_type])
+        return all([self.name, self.image_path, self.hypervisor])
 
     def to_xml(self):
         """Generate XML representation for libvirt.
