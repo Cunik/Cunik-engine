@@ -27,7 +27,7 @@ class VMConfig:
         >>> vmc.to_xml()  # Convert to XML for libvirt
     """
     available_hypervisors = ['kvm']
-
+    
     def __init__(self):
         self.name = None
         self.image_path = None
