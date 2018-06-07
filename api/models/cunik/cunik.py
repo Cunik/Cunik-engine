@@ -12,12 +12,6 @@ class CunikConfig:
         self.cmd = kwargs['cmd']
 
 
-class CunikRegistry:
-    """Local cunik registry."""
-    def __init__(self):
-        pass
-
-
 class Cunik:
     """Represent a cunik.
 
