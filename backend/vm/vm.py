@@ -35,6 +35,7 @@ class VMConfig:
         self.memory_size = 1024
         self.__hypervisor = None
         self.data_volume_path = None
+        self.data_volume_mount_point = None
 
     @property
     def hypervisor(self):
@@ -55,8 +56,9 @@ class VMConfig:
         """Check if non-default parameters have been set.
             By non-default, I mean that it is None by default and have to be set before generation XML.
         """
-        return all([self.name, self.image_path, self.hypervisor, self.data_volume_path])
+        return all([self.name, self.image_path, self.hypervisor, self.data_volume_path, self.data_volume_mount_point])
 
+    @property
     def to_xml(self):
         """Generate XML representation for libvirt.
 
@@ -78,7 +80,15 @@ class VMConfig:
         kernel = ET.SubElement(os, 'kernel')
         kernel.text = self.image_path
         cmdline = ET.SubElement(os, 'cmdline')
-        cmdline.text = self.cmdline + ' console=ttyS0 '
+        cmdline.text = 'console=ttyS0' + ('''{,,
+            "blk" :  {,,  
+                "source": "dev",,  
+                "path": "/dev/ld0a",,  
+                "fstype": "blk",,  
+                "mountpoint": "%s",,
+            },,  
+            "cmdline": "%s",,  
+        },,''' % (self.data_volume_mount_point, self.cmdline))
 
         memory = ET.SubElement(domain, 'memory')
         memory.text = str(self.memory_size)
@@ -91,8 +101,8 @@ class VMConfig:
         source = ET.SubElement(disk, 'source')
         source.set('file', self.data_volume_path)
         target = ET.SubElement(disk, 'target')
-        target.set('dev', 'hda')
-        target.set('bus', 'ide')
+        target.set('dev', 'sda')
+        target.set('bus', 'virtio')
         driver = ET.SubElement(disk, 'driver')
         driver.set('type', 'raw')
         driver.set('name', 'qemu')
@@ -129,7 +139,7 @@ class VM:
     def __init__(self, config: VMConfig):
         # TODO: should we define then start or just create?
         conn = lv.open('')  # TODO: set URI by vm type
-        self.domain = conn.defineXML(config.to_xml())
+        self.domain = conn.defineXML(config.to_xml)
         self.uuid = self.domain.UUIDString()
         conn.close()
 

@@ -17,6 +17,7 @@ class CunikConfig:
         self.vmm = kwargs['vmm']  # VM type
         self.mem = kwargs['mem']  # memory size in KB
         self.data_volume = kwargs['data_volume']  # data volume name
+        self.data_volume_mount_point = kwargs['data_volume_mount_point']
 
 
 class Cunik:
@@ -40,6 +41,7 @@ class Cunik:
         vmc.name = config.name
         vmc.image_path = image_registry[config.img]
         vmc.data_volume_path = data_volume_registry[config.data_volume]
+        vmc.data_volume_mount_point = config.data_volume_mount_point
         vmc.command_line = config.cmd
         vmc.hypervisor = config.vmm
         vmc.memory_size = config.mem
@@ -69,4 +71,3 @@ class Cunik:
         del self.vm
         # Remove from registry
         # CunikRegistry.remove(xxx, self)
-
