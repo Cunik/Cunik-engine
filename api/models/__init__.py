@@ -5,5 +5,6 @@ __all__ = [
     'Image', 'ImageRegistry'
 ]
 
-from .cunik import Cunik, CunikConfig, CunikRegistry
+from .cunik import Cunik, CunikConfig
+from .cunik_registry import CunikRegistry
 from .image import Image, ImageRegistry
