@@ -2,6 +2,7 @@
 
 from api.models.image import ImageRegistry
 from api.models.cunik_registry import CunikRegistry
+from api.models.image_registry import image_registry
 from backend.vm import VM, VMConfig
 import uuid
 
@@ -35,7 +36,7 @@ class Cunik:
         self.state = 'Not started'
         vmc = VMConfig()
         vmc.name = config.name
-        vmc.image_path = config.img
+        vmc.image_path = image_registry[config.img]
         vmc.command_line = config.cmd
         vmc.hypervisor = config.vmm
         vmc.memory_size = config.mem
