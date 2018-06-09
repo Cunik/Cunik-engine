@@ -1,4 +1,6 @@
 # Cunik
+***(The project is under development.)***
+
 Cunik is a solution for easily building, packaging, delivering, fetching, deploying and managing unikernel images over different unikernel implementations like Rumprun, OSv, MirageOS and IncludeOS, which enables people launching unikernel applications by several command lines.
 
 ## Why does Cunik exist?
@@ -42,20 +44,23 @@ pip3 install -r requirements.txt
 
 A Cunik engine is a deamon that listens on the host and waits for requests from clients. Now, let's launch the Cunik engine.
 
+Copy `config.py.sample` to `config.py`, and make sure it's right.
+
+Run the deamon:
+
 ```shell
 python3 engine.py runserver
 ```
 
-Copy manually.
-
-Modify the config.py.
-
-Send request by hand.
+Test the API by sending request manually.
 
 ## Contributing
 
+(none)
+
 ## Links
 
+(none)
 
 ## Licensing
 
