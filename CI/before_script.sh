@@ -9,3 +9,6 @@ echo "{}" > images/metadata.json
 
 mkdir volumes
 echo "{}" > volumes/metadata.json
+
+mkdir networkconfigs
+echo "{}" > networkconfigs/metadata.json
