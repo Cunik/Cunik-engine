@@ -6,6 +6,7 @@ python:
 before_install:
   - sudo apt-get install -qq libvirt-dev
 
-install: pip install -r requirements.txt
+install:
+  - pip install -r requirements.txt
 
-script: python engine.py test
+script: cp config.py.sample config.py && python engine.py test
