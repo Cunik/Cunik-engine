@@ -1,6 +1,8 @@
 # Cunik
 ***(The project is under development.)***
 
+[![Build Status](https://travis-ci.org/Cunik/Cunik-engine.svg?branch=master)](https://travis-ci.org/Cunik/Cunik-engine)
+
 Cunik is a solution for easily building, packaging, delivering, fetching, deploying and managing unikernel images over different unikernel implementations like Rumprun, OSv, MirageOS and IncludeOS, which enables people launching unikernel applications by several command lines.
 
 ## Why does Cunik exist?
