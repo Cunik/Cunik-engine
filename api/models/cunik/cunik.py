@@ -1,6 +1,5 @@
 """class Cunik."""
 
-from api.models.image import ImageRegistry
 from api.models.cunik_registry import CunikRegistry
 from api.models.image_registry import image_registry
 from api.models.data_volume_registry import data_volume_registry
