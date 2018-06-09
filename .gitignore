@@ -124,5 +124,6 @@ fabric.properties
 .idea/sonarlint
 
 cunik.log
+config.py
 
 # End of https://www.gitignore.io/api/code,macos,pycharm
