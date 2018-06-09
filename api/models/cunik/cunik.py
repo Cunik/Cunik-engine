@@ -1,7 +1,8 @@
 """class Cunik."""
 
-from api.models.image import ImageRegistry
 from api.models.cunik_registry import CunikRegistry
+from api.models.image_registry import image_registry
+from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
 import uuid
 
@@ -9,11 +10,13 @@ import uuid
 class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
     def __init__(self, **kwargs):
-        self.name = kwargs['name'] # name of Cunik instance
-        self.img = kwargs['img'] # path to image file
-        self.cmd = kwargs['cmd'] # command line parameters
-        self.vmm = kwargs['vmm'] # VM type
-        self.mem = kwargs['mem'] # memory size in KB
+        self.name = kwargs['name']  # name of Cunik instance
+        self.img = kwargs['img']  # path to image file
+        self.cmd = kwargs['cmd']  # command line parameters
+        self.vmm = kwargs['vmm']  # VM type
+        self.mem = kwargs['mem']  # memory size in KB
+        self.data_volume = kwargs['data_volume']  # data volume name
+        self.data_volume_mount_point = kwargs['data_volume_mount_point']
 
 
 class Cunik:
@@ -35,7 +38,9 @@ class Cunik:
         self.state = 'Not started'
         vmc = VMConfig()
         vmc.name = config.name
-        vmc.image_path = config.img
+        vmc.image_path = image_registry.get_image_path(config.img)
+        vmc.data_volume_path = data_volume_registry.get_volume_path(config.data_volume)
+        vmc.data_volume_mount_point = config.data_volume_mount_point
         vmc.command_line = config.cmd
         vmc.hypervisor = config.vmm
         vmc.memory_size = config.mem
@@ -62,7 +67,6 @@ class Cunik:
     def __del__(self):
         """Destroy a cunik according to the config."""
         # Destroy the vm
-        del(self.vm)
+        del self.vm
         # Remove from registry
         # CunikRegistry.remove(xxx, self)
-
