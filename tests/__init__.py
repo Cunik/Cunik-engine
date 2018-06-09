@@ -1,5 +1,5 @@
 # coding : utf-8
 
-__all__ = ["test_all"]
+__all__ = ["TestAll"]
 
-from .tests import test_all
+from .tests import TestAll
