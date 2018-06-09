@@ -27,7 +27,7 @@ class VMConfig:
         >>> vmc.to_xml()  # Convert to XML for libvirt
     """
     available_hypervisors = ['kvm']
-    
+
     def __init__(self):
         self.name = None
         self.image_path = None
@@ -36,6 +36,7 @@ class VMConfig:
         self.__hypervisor = None
         self.data_volume_path = None
         self.data_volume_mount_point = None
+        self.network_config = None
 
     @property
     def hypervisor(self):
@@ -56,7 +57,8 @@ class VMConfig:
         """Check if non-default parameters have been set.
             By non-default, I mean that it is None by default and have to be set before generation XML.
         """
-        return all([self.name, self.image_path, self.hypervisor, self.data_volume_path, self.data_volume_mount_point])
+        return all([self.name, self.image_path, self.hypervisor, self.data_volume_path, self.data_volume_mount_point,
+                    self.network_config])
 
     @property
     def to_xml(self):
@@ -86,7 +88,14 @@ class VMConfig:
                 "path": "/dev/ld0a",,  
                 "fstype": "blk",,  
                 "mountpoint": "%s",,
-            },,  
+            },,
+            "net" :  {,, 
+                "if": "vioif0",, 
+                "type": "inet",, 
+                "method": "static",, 
+                "addr": "10.0.120.101",, 
+                "mask": "24",, 
+            },, 
             "cmdline": "%s",,  
         },,''' % (self.data_volume_mount_point, self.cmdline))
 

@@ -1,6 +1,5 @@
 """class Cunik."""
 
-from api.models.cunik_registry import CunikRegistry
 from api.models.image_registry import image_registry
 from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
@@ -17,6 +16,7 @@ class CunikConfig:
         self.mem = kwargs['mem']  # memory size in KB
         self.data_volume = kwargs['data_volume']  # data volume name
         self.data_volume_mount_point = kwargs['data_volume_mount_point']
+        self.network_config = kwargs['network_config'] # network configuration name
 
 
 class Cunik:
@@ -44,6 +44,7 @@ class Cunik:
         vmc.command_line = config.cmd
         vmc.hypervisor = config.vmm
         vmc.memory_size = config.mem
+        vmc.network_config = config.network_config
         self.vm = VM(vmc)
         # Register the cunik in the registry
         # CunikRegistry.register(xxx, self)

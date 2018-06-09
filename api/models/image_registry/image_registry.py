@@ -4,7 +4,7 @@ from config import cunik_root
 
 
 class ImageRegistry:
-    """The registry of data volumes.
+    """The registry of images.
 
     Usage:
         >>> ir = ImageRegistry()

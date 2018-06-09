@@ -1,11 +1,13 @@
 # coding : utf-8
+import json
+from config import cunik_root
 
 
 class CunikRegistry:
     """Local cunik registry."""
 
-    def __init__(self):
-        self._cuniks = {}
+    def __init__(self, Regfile):
+        self._cuniks = json.load(Regfile)
 
     def register(self, cunik):
         assert not self.query(cunik.id)
@@ -21,3 +23,6 @@ class CunikRegistry:
     def populate(self, cunik):
         assert self.query(cunik.id)
         self._cuniks[cunik.id] = cunik
+
+
+# cunik_registry = CunikRegistry(Regfile)
