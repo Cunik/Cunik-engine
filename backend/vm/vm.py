@@ -24,7 +24,8 @@ class VMConfig:
         >>> vmc.image_path = './example.img'  # This has to be set
         >>> vmc.cmdline = './hello_world'  # Command line passed to kernel
         >>> vmc.memory_size = 1024  # Memory size in KB
-        >>> vmc.vdisk_path = 'disk.iso'
+        >>> vmc.vdisk_path = 'disk.iso'  # Vritual disk
+        >>> vmc.nic = 'tap0'  # Network interface card
         >>> vmc.hypervisor = 'kvm'  # VM type
         >>> vmc.to_xml()  # Convert to XML for libvirt
     """
@@ -36,6 +37,7 @@ class VMConfig:
         self.cmdline = None
         self.memory_size = 1024
         self.vdisk_path = None
+        self.nic = None
         self.__hypervisor = None
 
     @property
@@ -104,7 +106,7 @@ class VMConfig:
         ethernet = ET.SubElement(devices, 'interface')
         ethernet.set('type', 'ethernet')
         target = ET.SubElement(ethernet, 'target')
-        target.set('dev', 'tap0')
+        target.set('dev', self.nic)
         model = ET.SubElement(ethernet, 'model')
         model.set('type', 'virtio')
         driver = ET.SubElement(ethernet, 'driver')
@@ -115,7 +117,6 @@ class VMConfig:
         memballoon.set('model', 'none')
 
         # For debugging
-        # TODO: add console option
         serial = ET.SubElement(devices, 'serial')
         serial.set('type', 'pty')
         target = ET.SubElement(serial, 'target')
