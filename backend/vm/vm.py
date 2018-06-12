@@ -83,19 +83,19 @@ class VMConfig:
         kernel.text = self.image_path
         cmdline = ET.SubElement(os, 'cmdline')
         cmdline.text = 'console=ttyS0' + ('''{,,
-            "blk" :  {,,  
-                "source": "dev",,  
+            "blk" :  {,,
+                "source": "dev",,
                 "path": "/dev/ld0a",,  
-                "fstype": "blk",,  
+                "fstype": "blk",,
                 "mountpoint": "%s",,
             },,
-            "net" :  {,, 
+            "net" :  {,,
                 "if": "vioif0",, 
-                "type": "inet",, 
-                "method": "static",, 
-                "addr": "10.0.120.101",, 
+                "type": "inet",,
+                "method": "static",,
+                "addr": "10.0.120.101",,
                 "mask": "24",, 
-            },, 
+            },,
             "cmdline": "%s",,  
         },,''' % (self.data_volume_mount_point, self.cmdline))
 
@@ -110,13 +110,29 @@ class VMConfig:
         source = ET.SubElement(disk, 'source')
         source.set('file', self.data_volume_path)
         target = ET.SubElement(disk, 'target')
-        target.set('dev', 'sda')
+        target.set('dev', 'vda')
         target.set('bus', 'virtio')
         driver = ET.SubElement(disk, 'driver')
         driver.set('type', 'raw')
         driver.set('name', 'qemu')
 
+        # NIC
+        # TODO: not recommended by libvirt
+        ethernet = ET.SubElement(devices, 'interface')
+        ethernet.set('type', 'ethernet')
+        target = ET.SubElement(ethernet, 'target')
+        target.set('dev', 'tap0')
+        model = ET.SubElement(ethernet, 'model')
+        model.set('type', 'virtio')
+        driver = ET.SubElement(ethernet, 'driver')
+        driver.set('name', 'qemu')
+
+        # Memballoon not supported, so none
+        memballoon = ET.SubElement(devices, 'memballoon')
+        memballoon.set('model', 'none')
+
         # For debugging
+        # TODO: add console option
         serial = ET.SubElement(devices, 'serial')
         serial.set('type', 'pty')
         target = ET.SubElement(serial, 'target')
