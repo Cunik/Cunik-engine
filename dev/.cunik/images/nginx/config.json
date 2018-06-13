@@ -1,0 +1,8 @@
+{
+    "name": "Cunik1",
+    "img": "nginx",
+    "cmd": "test_cmdline",
+    "vmm": "kvm",
+    "mem": "409600",
+    "data_volume": "test_volume"
+}
