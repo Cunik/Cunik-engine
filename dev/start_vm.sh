@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 
 ip l del tap0 2>/dev/null
 
