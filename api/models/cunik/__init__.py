@@ -1,1 +1,4 @@
-from .cunik import *
+__all__ = ["Cunik", "CunikConfig"]
+
+from .cunik import CunikConfig
+from .cunik import Cunik

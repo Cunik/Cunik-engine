@@ -1,9 +1,10 @@
 """class Cunik."""
 
-from api.models.image_registry import image_registry
-from api.models.data_volume_registry import data_volume_registry
+# from api.models.image_registry import image_registry
+# from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
 import uuid
+import json
 
 
 class CunikConfig:
@@ -15,8 +16,15 @@ class CunikConfig:
         self.vmm = kwargs['vmm']  # VM type
         self.mem = kwargs['mem']  # memory size in KB
         self.data_volume = kwargs['data_volume']  # data volume name
-        self.data_volume_mount_point = kwargs['data_volume_mount_point']
-        self.network_config = kwargs['network_config'] # network configuration name
+
+    def fill(path_to_cmdline: str, path_to_params: str):
+        with open(path_to_cmdline) as f:
+            cmdline = f.read()
+        with open(path_to_params) as f:
+            params = json.loads(f.read())
+        list_of_cmdline = cmdline.split('"')
+        list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
+        return '"'.join(list_of_cmdline)
 
 
 class Cunik:
@@ -38,11 +46,19 @@ class Cunik:
         self.state = 'Not started'
         vmc = VMConfig()
         vmc.name = config.name
-        vmc.image_path = image_registry.get_image_path(config.img)
-        vmc.vdisk_path = data_volume_registry.get_volume_path(config.data_volume)
+        vmc.image_path = config.img
         vmc.cmdline = config.cmd
+        vmc.vdisk_path = config.data_volume
         vmc.hypervisor = config.vmm
-        vmc.memory_size = config.mem
+        vmc.nic = 'tap0'
+        vmc.memory_size = int(config.mem)
+        print(vmc.name)
+        print(vmc.image_path)
+        print(vmc.cmdline)
+        print(vmc.vdisk_path)
+        print(vmc.hypervisor)
+        print(vmc.nic)
+        print(vmc.memory_size)
         self.vm = VM(vmc)
         # Register the cunik in the registry
         # CunikRegistry.register(xxx, self)
