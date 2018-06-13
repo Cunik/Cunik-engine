@@ -44,7 +44,7 @@ Then install all the dependencies:
 pip3 install -r requirements.txt
 ```
 
-A Cunik engine is a deamon that listens on the host and waits for requests from clients. Now, let's launch the Cunik engine.
+A Cunik engine is a daemon that listens on the host and waits for requests from clients. Now, let's launch the Cunik engine.
 
 Copy `config.py.sample` to `config.py`, and make sure it's right.
 
