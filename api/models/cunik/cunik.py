@@ -30,6 +30,7 @@ class CunikConfig:
             raise ValueError('memory size must be an integer')
         self.data_volume = kwargs['data_volume']  # data volume name
 
+    @staticmethod
     def fill(path_to_cmdline: str, path_to_params: str):
         try:
             with open(path_to_cmdline) as f:
