@@ -39,12 +39,10 @@ class Cunik:
         vmc = VMConfig()
         vmc.name = config.name
         vmc.image_path = image_registry.get_image_path(config.img)
-        vmc.data_volume_path = data_volume_registry.get_volume_path(config.data_volume)
-        vmc.data_volume_mount_point = config.data_volume_mount_point
-        vmc.command_line = config.cmd
+        vmc.vdisk_path = data_volume_registry.get_volume_path(config.data_volume)
+        vmc.cmdline = config.cmd
         vmc.hypervisor = config.vmm
         vmc.memory_size = config.mem
-        vmc.network_config = config.network_config
         self.vm = VM(vmc)
         # Register the cunik in the registry
         # CunikRegistry.register(xxx, self)
