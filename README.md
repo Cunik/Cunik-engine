@@ -48,7 +48,7 @@ A Cunik engine is a deamon that listens on the host and waits for requests from 
 
 Copy `config.py.sample` to `config.py`, and make sure it's right.
 
-Run the deamon:
+Run the daemon:
 
 ```shell
 python3 engine.py runserver
