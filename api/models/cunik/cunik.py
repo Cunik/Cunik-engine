@@ -10,18 +10,32 @@ import json
 class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
     def __init__(self, **kwargs):
+        keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory', 'data_volume'}
+        if not set(kwargs.keys()) <= keys_set:
+            raise TypeError(list(set(kwargs.keys()) - keys_set)[0] + ' is an invalid keyword argument for this function')
+        if not kwargs.get('name'):
+            raise KeyError
         self.name = kwargs['name']  # name of Cunik instance
-        self.img = kwargs['img']  # path to image file
-        self.cmd = kwargs['cmd']  # command line parameters
-        self.vmm = kwargs['vmm']  # VM type
-        self.mem = kwargs['mem']  # memory size in KB
+        self.image = kwargs['image']  # path to image file
+        self.cmdline = kwargs['cmdline']  # command line parameters
+        self.hypervisor = kwargs['hypervisor']  # VM type
+        self.memory = kwargs['memory']  # memory size in KB
         self.data_volume = kwargs['data_volume']  # data volume name
 
     def fill(path_to_cmdline: str, path_to_params: str):
-        with open(path_to_cmdline) as f:
-            cmdline = f.read()
-        with open(path_to_params) as f:
-            params = json.loads(f.read())
+        try:
+            with open(path_to_cmdline) as f:
+                cmdline = f.read()
+        except IOError:
+            raise IOError('cmdline file not found')
+        try:
+            with open(path_to_params) as f:
+                try:
+                    params = json.loads(f.read())
+                except ValueError as VE:
+                    raise ValueError('{0} is not a valid json file: {1}'.format(path_to_params, VE))
+        except IOError:
+            raise IOError('cmdline file not found')
         list_of_cmdline = cmdline.split('"')
         list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
         return '"'.join(list_of_cmdline)
@@ -46,19 +60,15 @@ class Cunik:
         self.state = 'Not started'
         vmc = VMConfig()
         vmc.name = config.name
-        vmc.image_path = config.img
-        vmc.cmdline = config.cmd
+        vmc.image_path = config.image
+        vmc.cmdline = config.cmdline
         vmc.vdisk_path = config.data_volume
-        vmc.hypervisor = config.vmm
+        vmc.hypervisor = config.hypervisor
         vmc.nic = 'tap0'
-        vmc.memory_size = int(config.mem)
-        print(vmc.name)
-        print(vmc.image_path)
-        print(vmc.cmdline)
-        print(vmc.vdisk_path)
-        print(vmc.hypervisor)
-        print(vmc.nic)
-        print(vmc.memory_size)
+        try:
+            vmc.memory_size = int(config.memory)
+        except ValueError:
+            raise ValueError('memory size must be an integer')
         self.vm = VM(vmc)
         # Register the cunik in the registry
         # CunikRegistry.register(xxx, self)
