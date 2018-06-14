@@ -19,8 +19,9 @@ cfg = CunikConfig(
     image=os.path.join(image_root, 'kernel.img'),
     cmdline=CunikConfig.fill(os.path.join(image_root, 'cmdline'), os.path.join(image_root, 'params.json')),
     hypervisor='kvm',
-    memory='409600',
+    memory='40960',
     data_volume=os.path.join(image_root, 'rootfs.iso'),
+    nic='tap0'
 )
 
 cu = Cunik(cfg)
