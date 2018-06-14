@@ -25,7 +25,7 @@ class CunikConfig:
         try:
             self.memory = int(kwargs['memory'])  # memory size in KB
             if self.memory <= 0:
-                raise ValueError('memory size must be an positive integer')
+                raise ValueError('memory size must be a positive integer')
         except ValueError:
             raise ValueError('memory size must be an integer')
         self.data_volume = kwargs['data_volume']  # data volume name
