@@ -11,17 +11,18 @@ class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
     def __init__(self, **kwargs):
         vital_keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory', 'data_volume'}
-        all_keys_set = set.union(vital_keys_set, set())
+        all_keys_set = set.union(vital_keys_set, {'nic'})
         if not set(kwargs.keys()) <= all_keys_set:
             raise KeyError('[ERROR] ' + list(set(kwargs.keys()) - all_keys_set)[0] +
                            ' is an invalid keyword argument for this function')
         if not set(kwargs.keys()) >= vital_keys_set:
             raise KeyError('[ERROR] ' + list(vital_keys_set - set(kwargs.keys()))[0] +
                            ' is a vital keyword argument for this function but has not been set')
-        self.name = kwargs['name']  # name of Cunik instance
-        self.image = kwargs['image']  # path to image file
-        self.cmdline = kwargs['cmdline']  # command line parameters
-        self.hypervisor = kwargs['hypervisor']  # VM type
+        self.name = kwargs.get('name')  # name of Cunik instance
+        self.image = kwargs.get('image')  # path to image file
+        self.cmdline = kwargs.get('cmdline')  # command line parameters
+        self.hypervisor = kwargs.get('hypervisor')  # VM type
+        self.nic = kwargs.get('nic')
         try:
             self.memory = int(kwargs['memory'])  # memory size in KB
         except ValueError as VE:
@@ -35,7 +36,7 @@ class CunikConfig:
         self.data_volume = kwargs['data_volume']  # data volume name
 
     @staticmethod
-    def fill(path_to_cmdline: str, path_to_params: str):
+    def fill(path_to_cmdline: str, path_to_params: str, **kwargs):
         try:
             with open(path_to_cmdline) as f:
                 cmdline = f.read()
@@ -51,6 +52,7 @@ class CunikConfig:
         except IOError as IE:
             print('[ERROR] params file not found: {0}'.format(IE))
             raise IE
+        params.update(kwargs)
         list_of_cmdline = cmdline.split('"')
         try:
             list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
@@ -83,7 +85,7 @@ class Cunik:
         vmc.cmdline = config.cmdline
         vmc.vdisk_path = config.data_volume
         vmc.hypervisor = config.hypervisor
-        vmc.nic = 'tap0'
+        vmc.nic = config.nic
         vmc.memory_size = int(config.memory)
         self.vm = VM(vmc)
         # Register the cunik in the registry
