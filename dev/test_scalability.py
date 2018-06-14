@@ -40,11 +40,13 @@ for i in range(1, T + 1):
     if not os.system('curl 10.{}.{}.101'.format(120 + i // 100, 120 + i % 100)):
         cnt += 1
 
-for i in range(1, T + 1):
-    cu[i - 1].stop()
-    print('stopped cunik{}'.format(i))
-
 if cnt == T:
     print('TEST PASSED!')
 else:
     print('TEST FAILED!')
+
+input('')
+
+for i in range(1, T + 1):
+    cu[i - 1].stop()
+    print('stopped cunik{}'.format(i))
