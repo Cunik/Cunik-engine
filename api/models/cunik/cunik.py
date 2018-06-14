@@ -13,10 +13,10 @@ class CunikConfig:
         vital_keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory', 'data_volume'}
         all_keys_set = set.union(vital_keys_set, set())
         if not set(kwargs.keys()) <= all_keys_set:
-            raise KeyError(list(set(kwargs.keys()) - all_keys_set)[0] +
+            raise KeyError('[ERROR] ' + list(set(kwargs.keys()) - all_keys_set)[0] +
                            ' is an invalid keyword argument for this function')
         if not set(kwargs.keys()) >= vital_keys_set:
-            raise KeyError(list(vital_keys_set - set(kwargs.keys()))[0] +
+            raise KeyError('[ERROR] ' + list(vital_keys_set - set(kwargs.keys()))[0] +
                            ' is a vital keyword argument for this function but has not been set')
         self.name = kwargs['name']  # name of Cunik instance
         self.image = kwargs['image']  # path to image file
@@ -24,10 +24,14 @@ class CunikConfig:
         self.hypervisor = kwargs['hypervisor']  # VM type
         try:
             self.memory = int(kwargs['memory'])  # memory size in KB
-            if self.memory <= 0:
-                raise ValueError('memory size must be a positive integer')
-        except ValueError:
-            raise ValueError('memory size must be an integer')
+        except ValueError as VE:
+            print('[ERROR] memory size must be an integer')
+            raise VE
+        try:
+            assert self.memory > 0
+        except AssertionError as AE:
+            print('[ERROR] memory size must be a positive integer')
+            raise AE
         self.data_volume = kwargs['data_volume']  # data volume name
 
     @staticmethod
@@ -36,17 +40,23 @@ class CunikConfig:
             with open(path_to_cmdline) as f:
                 cmdline = f.read()
         except IOError as IE:
-            raise IOError('cmdline file not found: {0}'.format(IE))
+            print('[ERROR] cmdline file not found: {0}'.format(IE))
+            raise IE
         try:
             with open(path_to_params) as f:
-                try:
-                    params = json.loads(f.read())
-                except ValueError as VE:
-                    raise ValueError('{0} is not a valid json file: {1}'.format(path_to_params, VE))
+                params = json.loads(f.read())
+        except ValueError as VE:
+            print('[ERROR] {0} is not a valid json file: {1}'.format(path_to_params, VE))
+            raise VE
         except IOError as IE:
-            raise IOError('params file not found: {0}'.format(IE))
+            print('[ERROR] params file not found: {0}'.format(IE))
+            raise IE
         list_of_cmdline = cmdline.split('"')
-        list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
+        try:
+            list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
+        except KeyError as KE:
+            print('[ERROR] params in cmdline not filled: {0}'.format(KE))
+            raise KE
         return '"'.join(list_of_cmdline)
 
 
