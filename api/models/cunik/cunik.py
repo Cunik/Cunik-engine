@@ -7,6 +7,68 @@ import uuid
 import json
 
 
+class CunikApi:
+
+    @staticmethod
+    def create(image_name, params=None):
+        """
+        Create a new cunik.
+
+        Usage:
+            >>> cunik = CunikApi.create('nginx', {'ipv4_addr': '10.0.20.1'})
+            >>> print(cunik["uuid"])
+        """
+        pass
+
+    @staticmethod
+    def list():
+        """
+        Return all created cunik and its simple information.
+        Usage:
+            >>> cuniks = CunikApi.list()
+            >>> for cunik in cuniks:
+            >>>     print(cunik["uuid"])
+            >>>     print(cunik["create_time"])
+            >>>     print(cunik["image_name"])
+        """
+        return []
+
+    @staticmethod
+    def info(uuid):
+        """
+        Return all informations about a cunik.
+        Usage:
+            >>> uuid = 'acb123'
+            >>> cunik = CunikApi.info(uuid)
+            >>> print(cunik["uuid"])
+            >>> print(cunik["create_time"])
+            >>> print(cunik["image_name"])
+            >>> print(cunik["params"])
+            >>> print(cunik["params"]["ipv4_addr"])
+        """
+        return {}
+
+
+    @staticmethod
+    def stop(uuid):
+        """
+        Stop a running cunik.
+        Usage:
+            >>> uuid = 'acb123'
+            >>> CunikApi.stop(uuid)
+        """
+        return None
+
+    @staticmethod
+    def remove(uuid):
+        """
+        (Stop and) Remove a created cunik.
+        Usage:
+            >>> uuid = 'acb123'
+            >>> CunikApi.remove(uuid)
+        """
+        return None
+
 class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
     def __init__(self, **kwargs):
