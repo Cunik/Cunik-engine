@@ -1,10 +1,13 @@
 """class Cunik."""
 
-# from api.models.image_registry import image_registry
-# from api.models.data_volume_registry import data_volume_registry
+from api.models.image_registry import image_registry
+from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
+from os import path
+from config import cunik_root
 import uuid
 import json
+import sys
 
 
 class CunikApi:
@@ -48,7 +51,6 @@ class CunikApi:
         """
         return {}
 
-
     @staticmethod
     def stop(uuid):
         """
@@ -69,11 +71,13 @@ class CunikApi:
         """
         return None
 
+
 class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
+
     def __init__(self, **kwargs):
-        vital_keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory', 'data_volume'}
-        all_keys_set = set.union(vital_keys_set, {'nic'})
+        vital_keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory'}
+        all_keys_set = set.union(vital_keys_set, {'nic', 'data_volume'})
         if not set(kwargs.keys()) <= all_keys_set:
             raise KeyError('[ERROR] ' + list(set(kwargs.keys()) - all_keys_set)[0] +
                            ' is an invalid keyword argument for this function')
@@ -81,45 +85,54 @@ class CunikConfig:
             raise KeyError('[ERROR] ' + list(vital_keys_set - set(kwargs.keys()))[0] +
                            ' is a vital keyword argument for this function but has not been set')
         self.name = kwargs.get('name')  # name of Cunik instance
-        self.image = kwargs.get('image')  # path to image file
+        try:
+            self.image = image_registry.get_image_path(kwargs.get('image'))  # path to image file
+        except KeyError as KE:
+            sys.stderr.write('[ERROR] cannot find image {} in registry\n'.format(self.image))
+            raise KE
         self.cmdline = kwargs.get('cmdline')  # command line parameters
         self.hypervisor = kwargs.get('hypervisor')  # VM type
         self.nic = kwargs.get('nic')
         try:
             self.memory = int(kwargs['memory'])  # memory size in KB
         except ValueError as VE:
-            print('[ERROR] memory size must be an integer')
+            sys.stderr.write('[ERROR] memory size must be an integer\n')
             raise VE
         try:
             assert self.memory > 0
         except AssertionError as AE:
-            print('[ERROR] memory size must be a positive integer')
+            sys.stderr.write('[ERROR] memory size must be a positive integer\n')
             raise AE
-        self.data_volume = kwargs['data_volume']  # data volume name
+        if kwargs.get('data_volume'):
+            try:
+                self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])  # data volume name
+            except KeyError as KE:
+                sys.stderr.write('[ERROR] cannot find data volume {} in registry\n'.format(self.data_volume))
+                raise KE
 
     @staticmethod
     def fill(path_to_cmdline: str, path_to_params: str, **kwargs):
         try:
-            with open(path_to_cmdline) as f:
+            with open(path.join(cunik_root, path_to_cmdline)) as f:
                 cmdline = f.read()
         except IOError as IE:
-            print('[ERROR] cmdline file not found: {0}'.format(IE))
+            sys.stderr.write('[ERROR] cmdline file not found: {0}\n'.format(IE))
             raise IE
         try:
-            with open(path_to_params) as f:
+            with open(path.join(cunik_root, path_to_params)) as f:
                 params = json.loads(f.read())
         except ValueError as VE:
-            print('[ERROR] {0} is not a valid json file: {1}'.format(path_to_params, VE))
+            sys.stderr.write('[ERROR] {0} is not a valid json file: {1}\n'.format(path_to_params, VE))
             raise VE
         except IOError as IE:
-            print('[ERROR] params file not found: {0}'.format(IE))
+            sys.stderr.write('[ERROR] params file not found: {0}\n'.format(IE))
             raise IE
         params.update(kwargs)
         list_of_cmdline = cmdline.split('"')
         try:
             list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
         except KeyError as KE:
-            print('[ERROR] params in cmdline not filled: {0}'.format(KE))
+            sys.stderr.write('[ERROR] params in cmdline not filled: {0}\n'.format(KE))
             raise KE
         return '"'.join(list_of_cmdline)
 
@@ -136,6 +149,7 @@ class Cunik:
         >>> cu.stop()
         >>> del cu  # NOTICE: This really destroys corresponding vm and remove this cunik from registry
     """
+
     def __init__(self, config: CunikConfig):
         """Initialize the cunik"""
         # Create the vm with the image

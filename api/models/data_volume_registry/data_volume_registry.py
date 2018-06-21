@@ -12,7 +12,7 @@ class DataVolumeRegistry:
     """
     def __init__(self):
         self.root = path.abspath(path.join(cunik_root, 'volumes'))
-        with open(path.join(self.root, 'images.json'), 'r') as fp:
+        with open(path.join(self.root, 'metadata.json'), 'r') as fp:
             self.volumes = json.load(fp)
 
     def get_volume_path(self, name: str):
