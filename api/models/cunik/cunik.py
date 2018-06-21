@@ -88,7 +88,7 @@ class CunikConfig:
         try:
             self.image = image_registry.get_image_path(kwargs.get('image'))  # path to image file
         except KeyError as KE:
-            sys.stderr.write('[ERROR] cannot find image {} in registry\n'.format(self.image))
+            sys.stderr.write('[ERROR] cannot find image {} in registry\n'.format(kwargs['image']))
             raise KE
         self.cmdline = kwargs.get('cmdline')  # command line parameters
         self.hypervisor = kwargs.get('hypervisor')  # VM type
@@ -107,7 +107,7 @@ class CunikConfig:
             try:
                 self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])  # data volume name
             except KeyError as KE:
-                sys.stderr.write('[ERROR] cannot find data volume {} in registry\n'.format(self.data_volume))
+                sys.stderr.write('[ERROR] cannot find data volume {} in registry\n'.format(kwargs['data_volume']))
                 raise KE
 
     @staticmethod
