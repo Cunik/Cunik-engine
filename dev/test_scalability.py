@@ -25,12 +25,12 @@ for i in range(1, T + 1):
     os.system('ip link set dev tap{} up'.format(i))
     cfg = CunikConfig(
         name='cunik{}'.format(i),
-        image=os.path.join(image_root, 'kernel.img'),
-        cmdline=CunikConfig.fill(os.path.join(image_root, 'cmdline'), os.path.join(image_root, 'params.json'),
+        image='nginx0.0.1',
+        cmdline=CunikConfig.fill('images/nginx/cmdline', 'images/nginx/params.json',
                                  ipv4_addr="10.{}.{}.101".format(120 + i // 100, 120 + i % 100)),
         hypervisor='kvm',
         memory='40960',
-        data_volume=os.path.join(image_root, 'rootfs.iso'),
+        data_volume='nginx_test_volume',
         nic='tap{}'.format(i)
     )
     cu[i - 1] = Cunik(cfg)

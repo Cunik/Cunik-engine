@@ -1,3 +1,5 @@
 import os
 
-os.system('sudo ./venv/bin/python -u ./dev/test_scalability.py')
+test_scalability = False
+
+os.system('sudo ./venv/bin/python -u ./dev/{}'.format('test_scalability.py' if test_scalability else 'test_cunik.py'))
