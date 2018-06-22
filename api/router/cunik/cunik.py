@@ -5,13 +5,15 @@ def create():
     pass
 
 
-def inspect():
+def info():
     pass
 
 
 def list():
     pass
 
+def stop():
+    pass
 
-def kill():
+def remove():
     pass

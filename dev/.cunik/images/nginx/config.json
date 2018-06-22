@@ -1,8 +1,5 @@
 {
-    "name": "Cunik1",
-    "img": "nginx",
-    "cmd": "test_cmdline",
-    "vmm": "kvm",
-    "mem": "409600",
-    "data_volume": "test_volume"
+  "memory": "40960",
+  "hypervisor": "kvm",
+  "data_volume": "rootfs.iso"
 }

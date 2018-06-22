@@ -1,0 +1,3 @@
+{
+    "nginx_test_volume": "../images/nginx/rootfs.iso"
+}

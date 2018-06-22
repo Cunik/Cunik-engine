@@ -100,6 +100,7 @@ class VMConfig:
         driver = ET.SubElement(disk, 'driver')
         driver.set('type', 'raw')
         driver.set('name', 'qemu')
+        readonly = ET.SubElement(disk, 'readonly')  # needed for qemu >= 2.10, for its image locking feature.
 
         # NIC
         # TODO: not recommended by libvirt
@@ -145,6 +146,7 @@ class VM:
         >>> vm.stop()
         >>> del vm  # Now this vm disappears
     """
+
     def __init__(self, config: VMConfig):
         # TODO: should we define then start or just create?
         conn = lv.open('')  # TODO: set URI by vm type
