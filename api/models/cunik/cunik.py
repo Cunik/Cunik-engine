@@ -139,6 +139,7 @@ class Cunik:
 
 class CunikApi:
     counter = dict()
+    tap_index = 0
 
     @staticmethod
     def create(image_name, params=None, **kwargs):
@@ -166,7 +167,8 @@ class CunikApi:
         if not CunikApi.counter.get(image_name):
             CunikApi.counter[image_name] = 0
         CunikApi.counter[image_name] += 1
-        tap_device_name = 'tap-{}-{}'.format(image_name, CunikApi.counter[image_name])
+        CunikApi.tap_index += 1
+        tap_device_name = 'tap{}'.format(CunikApi.tap_index)
         if params.get('ipv4_addr'):
             os.system('ip l del {} 2>/dev/null'.format(tap_device_name))
             os.system('ip tuntap add {} mode tap'.format(tap_device_name))
