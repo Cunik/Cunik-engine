@@ -3,8 +3,10 @@ import json
 import datetime
 import time
 import uuid
-from api.config import default_config
+import os
+from api.config import BaseConfig
 from api.utils import ensure_file
+from api.models.cunik import Cunik
 
 
 class CunikRegistry:
@@ -12,15 +14,23 @@ class CunikRegistry:
 
     def __init__(self, registry_file):
         if registry_file:
-            self.registry_file = registry_file
-            ensure_file(registry_file, content=json.dumps(dict()))
-            self._cuniks = json.load(registry_file)
+            ensure_file(BaseConfig.REGISTRY_ROOT, registry_file, content=json.dumps(dict()))
+            self.registry_file = BaseConfig.CUNIK_REGISTRY_FILE
+            with open(self.registry_file) as fp:
+                self._cuniks = self.convert_from_json(fp.read())
         else:
             self._cuniks = dict()
 
+    def convert_from_json(self, s: str):
+        return {uuid.UUID(k): Cunik.from_json(v) for k, v in json.loads(s).items()}
+
+    def convert_to_json(self):
+        return {str(k): v.to_json() for k, v in self._cuniks.items()}
+
     def save(self):
         if self.registry_file:
-            json.dump(self._cuniks, self.registry_file)
+            with open(self.registry_file, 'w') as fp:
+                json.dump(self.convert_to_json(), fp)
 
     def register(self, cunik):
         assert not self.query(cunik.id)
@@ -45,4 +55,4 @@ class CunikRegistry:
         return list(self._cuniks.keys())
 
 
-cunik_registry = CunikRegistry(default_config.CUNIK_REGISTRY_FILE)
+cunik_registry = CunikRegistry(BaseConfig.CUNIK_REGISTRY_FILE)

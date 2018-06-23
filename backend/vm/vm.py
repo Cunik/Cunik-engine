@@ -147,12 +147,13 @@ class VM:
         >>> del vm  # Now this vm disappears
     """
 
-    def __init__(self, config: VMConfig):
+    def __init__(self, config=None):
         # TODO: should we define then start or just create?
-        conn = lv.open('')  # TODO: set URI by vm type
-        self.domain = conn.defineXML(config.to_xml())
-        self.uuid = self.domain.UUIDString()
-        conn.close()
+        if config is not None:
+            conn = lv.open('')  # TODO: set URI by vm type
+            self.domain = conn.defineXML(config.to_xml())
+            self.uuid = self.domain.UUIDString()
+            conn.close()
 
     def start(self):
         """Start the vm, may raise exception."""
@@ -170,3 +171,15 @@ class VM:
             self.domain.destroy()
         finally:
             self.domain.undefine()
+
+    @staticmethod
+    def from_json(vm_json: dict):
+        res = VM()
+        print(vm_json)
+        res.uuid = vm_json['uuid']
+        conn = lv.open('')
+        res.domain = conn.lookupByID(res.uuid)
+        return res
+
+    def to_json(self):
+        return {'uuid': self.uuid}

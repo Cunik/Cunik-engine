@@ -2,7 +2,6 @@
 
 from api.models.image_registry import image_registry
 from api.models.data_volume_registry import data_volume_registry
-from api.models.cunik_registry import cunik_registry
 from backend.vm import VM, VMConfig
 from os import path
 from config import cunik_root
@@ -96,22 +95,24 @@ class Cunik:
         >>> del cu  # NOTICE: This really destroys corresponding vm and remove this cunik from registry
     """
 
-    def __init__(self, config: CunikConfig):
+    def __init__(self, config=None):
         """Initialize the cunik"""
         # Create the vm with the image
-        self.id = uuid.uuid4()
-        self.state = 'Not started'
-        vmc = VMConfig()
-        vmc.name = config.name
-        vmc.image_path = config.image
-        vmc.cmdline = config.cmdline
-        vmc.vdisk_path = config.data_volume
-        vmc.hypervisor = config.hypervisor
-        vmc.nic = config.nic
-        vmc.memory_size = int(config.memory)
-        self.vm = VM(vmc)
-        # Register the cunik in the registry
-        cunik_registry.register(self)
+        if config is not None:
+            self.id = uuid.uuid4()
+            self.state = 'Not started'
+            vmc = VMConfig()
+            vmc.name = config.name
+            vmc.image_path = config.image
+            vmc.cmdline = config.cmdline
+            vmc.vdisk_path = config.data_volume
+            vmc.hypervisor = config.hypervisor
+            vmc.nic = config.nic
+            vmc.memory_size = int(config.memory)
+            self.vm = VM(vmc)
+            # Register the cunik in the registry
+            from api.models.cunik_registry import cunik_registry
+            cunik_registry.register(self)
 
     def start(self):
         """Start the cunik."""
@@ -119,6 +120,7 @@ class Cunik:
         self.vm.start()
         self.state = 'Running'
         # Update in registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
 
     def stop(self):
@@ -127,6 +129,7 @@ class Cunik:
         self.vm.stop()
         self.state = 'Stopped'
         # Update in registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
 
     def destroy(self):
@@ -134,7 +137,19 @@ class Cunik:
         # Destroy the vm
         del self.vm
         # Remove from registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.remove(self)
+
+    def to_json(self):
+        return {'id': str(self.id), 'state': self.state, 'vm': self.vm.to_json()}
+
+    @staticmethod
+    def from_json(cunik_json: dict):
+        res = Cunik()
+        res.id = uuid.UUID(cunik_json['id'])
+        res.state = cunik_json['state']
+        res.vm = VM.from_json(cunik_json['vm'])
+        return res
 
 
 class CunikApi:
@@ -195,6 +210,7 @@ class CunikApi:
             >>>     print(cunik["create_time"])
             >>>     print(cunik["name"])
         """
+        from api.models.cunik_registry import cunik_registry
         return [cunik_registry.query(i) for i in cunik_registry.get_id_list()]
 
     @staticmethod
@@ -210,6 +226,7 @@ class CunikApi:
             >>> print(cunik["params"])
             >>> print(cunik["params"]["ipv4_addr"])
         """
+        from api.models.cunik_registry import cunik_registry
         return cunik_registry.query(cid)
 
     @staticmethod
@@ -220,6 +237,7 @@ class CunikApi:
             >>> id = 'acb123'
             >>> CunikApi.stop(id)
         """
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.query(cid).stop()
 
     @staticmethod
@@ -230,4 +248,5 @@ class CunikApi:
             >>> id = 'acb123'
             >>> CunikApi.remove(id)
         """
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.remove(cunik_registry.query(cid))

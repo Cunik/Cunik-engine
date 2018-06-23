@@ -9,7 +9,7 @@ from api.models.cunik import CunikApi
 CunikApi.create('redis-server', params={'ipv4_addr': '10.0.120.101'})
 print('created')
 time.sleep(2)
-os.system('redis-benchmark --csv -h 10.0.120.101 -c 50 -n 100000 -P 16')
+os.system('redis-benchmark --csv -h 10.0.120.101 -c 50 -n 10000 -P 16')
 for i in CunikApi.list():
     CunikApi.stop(i.id)
 print('stopped')
