@@ -135,7 +135,8 @@ class Cunik:
     def destroy(self):
         """Destroy a cunik according to the config."""
         # Destroy the vm
-        del self.vm
+        self.vm.destroy()
+        self.state = 'Destroyed'
         # Remove from registry
         from api.models.cunik_registry import cunik_registry
         cunik_registry.remove(self)
@@ -249,4 +250,4 @@ class CunikApi:
             >>> CunikApi.remove(id)
         """
         from api.models.cunik_registry import cunik_registry
-        cunik_registry.remove(cunik_registry.query(cid))
+        cunik_registry.query(cid).destroy()

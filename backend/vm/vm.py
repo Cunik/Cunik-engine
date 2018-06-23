@@ -165,7 +165,7 @@ class VM:
     def stop(self):
         self.domain.suspend()
 
-    def __del__(self):
+    def destroy(self):
         # This is necessary because the vm may not be running
         try:
             self.domain.destroy()
@@ -175,10 +175,10 @@ class VM:
     @staticmethod
     def from_json(vm_json: dict):
         res = VM()
-        print(vm_json)
         res.uuid = vm_json['uuid']
         conn = lv.open('')
-        res.domain = conn.lookupByID(res.uuid)
+        res.domain = conn.lookupByUUIDString(res.uuid)
+        conn.close()
         return res
 
     def to_json(self):
