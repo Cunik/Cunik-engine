@@ -33,19 +33,19 @@ class CunikRegistry:
                 json.dump(self.convert_to_json(), fp)
 
     def register(self, cunik):
-        assert not self.query(cunik.id)
+        assert not self.query(cunik.uuid)
         cunik.create_time = time.time()
-        self._cuniks[cunik.id] = cunik
+        self._cuniks[cunik.uuid] = cunik
         self.save()
 
     def remove(self, cunik):
-        assert self.query(cunik.id)
-        self._cuniks.pop(cunik.id)
+        assert self.query(cunik.uuid)
+        self._cuniks.pop(cunik.uuid)
         self.save()
 
     def populate(self, cunik):
-        assert self.query(cunik.id)
-        self._cuniks[cunik.id] = cunik
+        assert self.query(cunik.uuid)
+        self._cuniks[cunik.uuid] = cunik
         self.save()
 
     def query(self, cid: uuid.UUID):

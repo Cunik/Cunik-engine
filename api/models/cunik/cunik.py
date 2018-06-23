@@ -5,10 +5,10 @@ from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
 from os import path
 from config import cunik_root
-import uuid
 import json
 import sys
 import os
+import uuid
 
 
 class CunikConfig:
@@ -29,7 +29,7 @@ class CunikConfig:
         try:
             self.image = image_registry.get_image_path(kwargs.get('image'))
         except KeyError as KE:
-            sys.stderr.write('[ERROR] cannot find image {} in registry\n'.format(kwargs['image']))
+            print('[ERROR] cannot find image {} in registry'.format(kwargs['image']), file=sys.stderr)
             raise KE
         # command line parameters
         self.cmdline = kwargs.get('cmdline')
@@ -40,19 +40,19 @@ class CunikConfig:
         try:
             self.memory = int(kwargs['memory'])
         except ValueError as VE:
-            sys.stderr.write('[ERROR] memory size must be an integer\n')
+            print('[ERROR] memory size must be an integer', file=sys.stderr)
             raise VE
         try:
             assert self.memory > 0
         except AssertionError as AE:
-            sys.stderr.write('[ERROR] memory size must be a positive integer\n')
+            print('[ERROR] memory size must be a positive integer', file=sys.stderr)
             raise AE
         # data volume name
         if kwargs.get('data_volume'):
             try:
                 self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])
             except KeyError as KE:
-                sys.stderr.write('[ERROR] cannot find data volume {} in registry\n'.format(kwargs['data_volume']))
+                print('[ERROR] cannot find data volume {} in registry'.format(kwargs['data_volume']), file=sys.stderr)
                 raise KE
 
     @staticmethod
@@ -61,23 +61,23 @@ class CunikConfig:
             with open(path.join(cunik_root, path_to_cmdline)) as f:
                 cmdline = f.read()
         except IOError as IE:
-            sys.stderr.write('[ERROR] cmdline file not found: {0}\n'.format(IE))
+            print('[ERROR] cmdline file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         try:
             with open(path.join(cunik_root, path_to_params)) as f:
                 params = json.loads(f.read())
         except ValueError as VE:
-            sys.stderr.write('[ERROR] {0} is not a valid json file: {1}\n'.format(path_to_params, VE))
+            print('[ERROR] {0} is not a valid json file: {1}'.format(path_to_params, VE), file=sys.stderr)
             raise VE
         except IOError as IE:
-            sys.stderr.write('[ERROR] params file not found: {0}\n'.format(IE))
+            print('[ERROR] params file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         params.update(kwargs)
         list_of_cmdline = cmdline.split('"')
         try:
             list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
         except KeyError as KE:
-            sys.stderr.write('[ERROR] params in cmdline not filled: {0}\n'.format(KE))
+            print('[ERROR] params in cmdline not filled: {0}'.format(KE), file=sys.stderr)
             raise KE
         return '"'.join(list_of_cmdline)
 
@@ -99,7 +99,6 @@ class Cunik:
         """Initialize the cunik"""
         # Create the vm with the image
         if config is not None:
-            self.id = uuid.uuid4()
             self.state = 'Not started'
             vmc = VMConfig()
             vmc.name = config.name
@@ -113,6 +112,10 @@ class Cunik:
             # Register the cunik in the registry
             from api.models.cunik_registry import cunik_registry
             cunik_registry.register(self)
+
+    @property
+    def uuid(self):
+        return uuid.UUID(self.vm.uuid)
 
     def start(self):
         """Start the cunik."""
@@ -142,14 +145,19 @@ class Cunik:
         cunik_registry.remove(self)
 
     def to_json(self):
-        return {'id': str(self.id), 'state': self.state, 'vm': self.vm.to_json()}
+        return {'state': self.state, 'vm': self.vm.to_json()}
 
     @staticmethod
     def from_json(cunik_json: dict):
         res = Cunik()
-        res.id = uuid.UUID(cunik_json['id'])
-        res.state = cunik_json['state']
-        res.vm = VM.from_json(cunik_json['vm'])
+        try:
+            res.state = cunik_json['state']
+        except KeyError:
+            print('[ERROR] Cunik registry data error', file=sys.stderr)
+        try:
+            res.vm = VM.from_json(cunik_json['vm'])
+        except KeyError:
+            print('[ERROR] Cunik registry data error', file=sys.stderr)
         return res
 
 
