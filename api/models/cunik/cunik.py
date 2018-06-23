@@ -9,6 +9,7 @@ import json
 import sys
 import os
 import uuid
+import re
 
 
 class CunikConfig:
@@ -117,6 +118,10 @@ class Cunik:
     def uuid(self):
         return uuid.UUID(self.vm.uuid)
 
+    @property
+    def name(self):
+        return self.vm.domain.name()
+
     def start(self):
         """Start the cunik."""
         # Start the vm
@@ -162,8 +167,6 @@ class Cunik:
 
 
 class CunikApi:
-    counter = dict()
-    tap_index = 0
 
     @staticmethod
     def create(image_name, params=None, **kwargs):
@@ -174,6 +177,12 @@ class CunikApi:
             >>> cunik = CunikApi.create('nginx', {'ipv4_addr': '10.0.20.1'})
             >>> print(cunik["id"])
         """
+
+        def mex(name: str, names: set) -> int:
+            i = 1
+            while name + str(i) in names:
+                i += 1
+            return i
 
         def trans(ipv4):
             list_of_ipv4 = ipv4.split('.')
@@ -188,18 +197,18 @@ class CunikApi:
             data_volume_registry.add_volume_path(image_name,
                                                  '../images/{}/{}'.format(image_name, default_config['data_volume']))
             default_config['data_volume'] = image_name
-        if not CunikApi.counter.get(image_name):
-            CunikApi.counter[image_name] = 0
-        CunikApi.counter[image_name] += 1
-        CunikApi.tap_index += 1
-        tap_device_name = 'tap{}'.format(CunikApi.tap_index)
+        image_name_set = {i.name for i in CunikApi.list()}
+        image_name_index = mex(image_name, image_name_set)
+        tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
+        tap_name_index = mex('tap', tap_name_set)
+        tap_device_name = 'tap{}'.format(tap_name_index)
         if params.get('ipv4_addr'):
             os.system('ip l del {} 2>/dev/null'.format(tap_device_name))
             os.system('ip tuntap add {} mode tap'.format(tap_device_name))
             os.system('ip addr add {}/24 dev {}'.format(trans(params['ipv4_addr']), tap_device_name))
             os.system('ip link set dev {} up'.format(tap_device_name))
         cfg = CunikConfig(
-            name=image_name + str(CunikApi.counter[image_name]),
+            name=image_name + str(image_name_index),
             image=image_name,
             cmdline=CunikConfig.fill('images/{}/cmdline'.format(image_name), 'images/{}/params.json'.format(image_name),
                                      **params),

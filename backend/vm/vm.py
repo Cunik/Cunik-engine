@@ -75,7 +75,7 @@ class VMConfig:
         domain.set('type', self.hypervisor)
 
         name = ET.SubElement(domain, 'name')
-        name.text = '[Cunik] ' + self.name
+        name.text = self.name
 
         os = ET.SubElement(domain, 'os')
         tp = ET.SubElement(os, 'type')
