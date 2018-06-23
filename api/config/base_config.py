@@ -12,6 +12,5 @@ class BaseConfig:
         handler.setLevel(logging.WARNING)
         app.logger.addHandler(handler)
 
-    CUNIK_FILE_ROOT = os.path.realpath('/var/cunik/')
-    CUNIK_REGISTRY_FILE = os.path.join(CUNIK_FILE_ROOT, '/registry/cunik.json')
-
+    CUNIK_FILE_ROOT = os.path.realpath('/var/cunik')
+    CUNIK_REGISTRY_FILE = os.path.join(CUNIK_FILE_ROOT, 'registry/cunik.json')
