@@ -12,8 +12,8 @@ time.sleep(2)
 print('waiting')
 os.system('curl 10.0.120.101')
 for i in CunikApi.list():
-    CunikApi.stop(i.id)
+    CunikApi.stop(i.uuid)
 print('stopped')
 for i in CunikApi.list():
-    CunikApi.remove(i.id)
+    CunikApi.remove(i.uuid)
 print('removed')

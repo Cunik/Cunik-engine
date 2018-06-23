@@ -1,5 +1,6 @@
 import libvirt as lv
 import xml.etree.cElementTree as ET
+import sys
 
 
 class InvalidVMConfigError(Exception):
@@ -74,7 +75,7 @@ class VMConfig:
         domain.set('type', self.hypervisor)
 
         name = ET.SubElement(domain, 'name')
-        name.text = self.name
+        name.text = '[Cunik] ' + self.name
 
         os = ET.SubElement(domain, 'os')
         tp = ET.SubElement(os, 'type')
@@ -151,6 +152,8 @@ class VM:
         # TODO: should we define then start or just create?
         if config is not None:
             conn = lv.open('')  # TODO: set URI by vm type
+            if conn is None:
+                print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
             self.domain = conn.defineXML(config.to_xml())
             self.uuid = self.domain.UUIDString()
             conn.close()
@@ -177,7 +180,11 @@ class VM:
         res = VM()
         res.uuid = vm_json['uuid']
         conn = lv.open('')
+        if conn is None:
+            print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
         res.domain = conn.lookupByUUIDString(res.uuid)
+        if res.domain is None:
+            print('[ERROR] Failed to find the domain with UUID={}'.format(res.uuid), file=sys.stderr)
         conn.close()
         return res
 

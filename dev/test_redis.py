@@ -15,15 +15,15 @@ if 1 in L:
     time.sleep(2)
 
 if 2 in L:
-    os.system('redis-benchmark --csv -h 10.0.120.101 -c 50 -n 10000 -P 16')
-    os.system('redis-benchmark --csv -h 10.0.121.101 -c 50 -n 10000 -P 16')
+    os.system('redis-benchmark --csv -h 10.0.120.101 -c 50 -n 1000 -P 16')
+    os.system('redis-benchmark --csv -h 10.0.121.101 -c 50 -n 1000 -P 16')
 
 if 3 in L:
     for i in CunikApi.list():
-        CunikApi.stop(i.id)
+        CunikApi.stop(i.uuid)
     print('stopped')
 
 if 4 in L:
     for i in CunikApi.list():
-        CunikApi.remove(i.id)
+        CunikApi.remove(i.uuid)
     print('removed')
