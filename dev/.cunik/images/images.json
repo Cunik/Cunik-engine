@@ -1,3 +1,4 @@
 {
-    "nginx": "nginx/kernel.img"
+    "nginx": "nginx/kernel.img",
+    "redis-server": "redis-server/kernel.img"
 }

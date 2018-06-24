@@ -1,31 +1,29 @@
 import os
 import sys
 import time
+
 sys.path.append(os.path.abspath('.'))
 
-from api.models import Cunik, CunikConfig
+from api.models.cunik import CunikApi
 
-import config
+L = [1, 2, 3, 4]
 
-image_root = os.path.join(config.cunik_root, 'images/redis-server')
+if 1 in L:
+    CunikApi.create('redis-server', params={'ipv4_addr': '10.0.120.101'})
+    CunikApi.create('redis-server', params={'ipv4_addr': '10.0.121.101'})
+    print('created')
+    time.sleep(2)
 
-os.system('ip l del tap0 2>/dev/null')
-os.system('ip tuntap add tap0 mode tap')
-os.system('ip addr add 10.0.120.100/24 dev tap0')
-os.system('ip link set dev tap0 up')
+if 2 in L:
+    os.system('redis-benchmark --csv -h 10.0.120.101 -c 50 -n 1000 -P 16')
+    os.system('redis-benchmark --csv -h 10.0.121.101 -c 50 -n 1000 -P 16')
 
-cfg = CunikConfig(
-    name='cunik0',
-    image=os.path.join(image_root, 'kernel.img'),
-    cmdline=CunikConfig.fill(os.path.join(image_root, 'cmdline'), os.path.join(image_root, 'params.json')),
-    hypervisor='kvm',
-    memory='409600',
-    data_volume=os.path.join(image_root, 'rootfs.iso'),
-)
+if 3 in L:
+    for i in CunikApi.list():
+        CunikApi.stop(i.uuid)
+    print('stopped')
 
-cu = Cunik(cfg)
-print('waiting')
-cu.start()
-print('started')
-input('Press enter to stop...')
-print('stopped')
+if 4 in L:
+    for i in CunikApi.list():
+        CunikApi.remove(i.uuid)
+    print('removed')

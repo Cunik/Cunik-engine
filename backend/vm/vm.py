@@ -1,5 +1,6 @@
 import libvirt as lv
 import xml.etree.cElementTree as ET
+import sys
 
 
 class InvalidVMConfigError(Exception):
@@ -147,12 +148,15 @@ class VM:
         >>> del vm  # Now this vm disappears
     """
 
-    def __init__(self, config: VMConfig):
+    def __init__(self, config=None):
         # TODO: should we define then start or just create?
-        conn = lv.open('')  # TODO: set URI by vm type
-        self.domain = conn.defineXML(config.to_xml())
-        self.uuid = self.domain.UUIDString()
-        conn.close()
+        if config is not None:
+            conn = lv.open('')  # TODO: set URI by vm type
+            if conn is None:
+                print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
+            self.domain = conn.defineXML(config.to_xml())
+            self.uuid = self.domain.UUIDString()
+            conn.close()
 
     def start(self):
         """Start the vm, may raise exception."""
@@ -164,9 +168,25 @@ class VM:
     def stop(self):
         self.domain.suspend()
 
-    def __del__(self):
+    def destroy(self):
         # This is necessary because the vm may not be running
         try:
             self.domain.destroy()
         finally:
             self.domain.undefine()
+
+    @staticmethod
+    def from_json(vm_json: dict):
+        res = VM()
+        res.uuid = vm_json['uuid']
+        conn = lv.open('')
+        if conn is None:
+            print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
+        res.domain = conn.lookupByUUIDString(res.uuid)
+        if res.domain is None:
+            print('[ERROR] Failed to find the domain with UUID={}'.format(res.uuid), file=sys.stderr)
+        conn.close()
+        return res
+
+    def to_json(self):
+        return {'uuid': self.uuid}

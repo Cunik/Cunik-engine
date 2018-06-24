@@ -2,14 +2,14 @@
 
 from api.models.image_registry import image_registry
 from api.models.data_volume_registry import data_volume_registry
-from api.models.cunik_registry import cunik_registry
 from backend.vm import VM, VMConfig
 from os import path
 from config import cunik_root
-import uuid
 import json
 import sys
 import os
+import uuid
+import re
 
 
 class CunikConfig:
@@ -30,7 +30,7 @@ class CunikConfig:
         try:
             self.image = image_registry.get_image_path(kwargs.get('image'))
         except KeyError as KE:
-            sys.stderr.write('[ERROR] cannot find image {} in registry\n'.format(kwargs['image']))
+            print('[ERROR] cannot find image {} in registry'.format(kwargs['image']), file=sys.stderr)
             raise KE
         # command line parameters
         self.cmdline = kwargs.get('cmdline')
@@ -41,19 +41,19 @@ class CunikConfig:
         try:
             self.memory = int(kwargs['memory'])
         except ValueError as VE:
-            sys.stderr.write('[ERROR] memory size must be an integer\n')
+            print('[ERROR] memory size must be an integer', file=sys.stderr)
             raise VE
         try:
             assert self.memory > 0
         except AssertionError as AE:
-            sys.stderr.write('[ERROR] memory size must be a positive integer\n')
+            print('[ERROR] memory size must be a positive integer', file=sys.stderr)
             raise AE
         # data volume name
         if kwargs.get('data_volume'):
             try:
                 self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])
             except KeyError as KE:
-                sys.stderr.write('[ERROR] cannot find data volume {} in registry\n'.format(kwargs['data_volume']))
+                print('[ERROR] cannot find data volume {} in registry'.format(kwargs['data_volume']), file=sys.stderr)
                 raise KE
 
     @staticmethod
@@ -62,23 +62,23 @@ class CunikConfig:
             with open(path.join(cunik_root, path_to_cmdline)) as f:
                 cmdline = f.read()
         except IOError as IE:
-            sys.stderr.write('[ERROR] cmdline file not found: {0}\n'.format(IE))
+            print('[ERROR] cmdline file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         try:
             with open(path.join(cunik_root, path_to_params)) as f:
                 params = json.loads(f.read())
         except ValueError as VE:
-            sys.stderr.write('[ERROR] {0} is not a valid json file: {1}\n'.format(path_to_params, VE))
+            print('[ERROR] {0} is not a valid json file: {1}'.format(path_to_params, VE), file=sys.stderr)
             raise VE
         except IOError as IE:
-            sys.stderr.write('[ERROR] params file not found: {0}\n'.format(IE))
+            print('[ERROR] params file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         params.update(kwargs)
         list_of_cmdline = cmdline.split('"')
         try:
             list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
         except KeyError as KE:
-            sys.stderr.write('[ERROR] params in cmdline not filled: {0}\n'.format(KE))
+            print('[ERROR] params in cmdline not filled: {0}'.format(KE), file=sys.stderr)
             raise KE
         return '"'.join(list_of_cmdline)
 
@@ -96,22 +96,31 @@ class Cunik:
         >>> del cu  # NOTICE: This really destroys corresponding vm and remove this cunik from registry
     """
 
-    def __init__(self, config: CunikConfig):
+    def __init__(self, config=None):
         """Initialize the cunik"""
         # Create the vm with the image
-        self.id = uuid.uuid4()
-        self.state = 'Not started'
-        vmc = VMConfig()
-        vmc.name = config.name
-        vmc.image_path = config.image
-        vmc.cmdline = config.cmdline
-        vmc.vdisk_path = config.data_volume
-        vmc.hypervisor = config.hypervisor
-        vmc.nic = config.nic
-        vmc.memory_size = int(config.memory)
-        self.vm = VM(vmc)
-        # Register the cunik in the registry
-        cunik_registry.register(self)
+        if config is not None:
+            self.state = 'Not started'
+            vmc = VMConfig()
+            vmc.name = config.name
+            vmc.image_path = config.image
+            vmc.cmdline = config.cmdline
+            vmc.vdisk_path = config.data_volume
+            vmc.hypervisor = config.hypervisor
+            vmc.nic = config.nic
+            vmc.memory_size = int(config.memory)
+            self.vm = VM(vmc)
+            # Register the cunik in the registry
+            from api.models.cunik_registry import cunik_registry
+            cunik_registry.register(self)
+
+    @property
+    def uuid(self):
+        return uuid.UUID(self.vm.uuid)
+
+    @property
+    def name(self):
+        return self.vm.domain.name()
 
     def start(self):
         """Start the cunik."""
@@ -119,6 +128,7 @@ class Cunik:
         self.vm.start()
         self.state = 'Running'
         # Update in registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
 
     def stop(self):
@@ -127,18 +137,36 @@ class Cunik:
         self.vm.stop()
         self.state = 'Stopped'
         # Update in registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
 
     def destroy(self):
         """Destroy a cunik according to the config."""
         # Destroy the vm
-        del self.vm
+        self.vm.destroy()
+        self.state = 'Destroyed'
         # Remove from registry
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.remove(self)
+
+    def to_json(self):
+        return {'state': self.state, 'vm': self.vm.to_json()}
+
+    @staticmethod
+    def from_json(cunik_json: dict):
+        res = Cunik()
+        try:
+            res.state = cunik_json['state']
+        except KeyError:
+            print('[ERROR] Cunik registry data error', file=sys.stderr)
+        try:
+            res.vm = VM.from_json(cunik_json['vm'])
+        except KeyError:
+            print('[ERROR] Cunik registry data error', file=sys.stderr)
+        return res
 
 
 class CunikApi:
-    counter = dict()
 
     @staticmethod
     def create(image_name, params=None, **kwargs):
@@ -149,6 +177,12 @@ class CunikApi:
             >>> cunik = CunikApi.create('nginx', {'ipv4_addr': '10.0.20.1'})
             >>> print(cunik["id"])
         """
+
+        def mex(name: str, names: set) -> int:
+            i = 1
+            while name + str(i) in names:
+                i += 1
+            return i
 
         def trans(ipv4):
             list_of_ipv4 = ipv4.split('.')
@@ -163,17 +197,18 @@ class CunikApi:
             data_volume_registry.add_volume_path(image_name,
                                                  '../images/{}/{}'.format(image_name, default_config['data_volume']))
             default_config['data_volume'] = image_name
-        if not CunikApi.counter.get(image_name):
-            CunikApi.counter[image_name] = 0
-        CunikApi.counter[image_name] += 1
-        tap_device_name = 'tap-{}-{}'.format(image_name, CunikApi.counter[image_name])
+        image_name_set = {i.name for i in CunikApi.list()}
+        image_name_index = mex(image_name, image_name_set)
+        tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
+        tap_name_index = mex('tap', tap_name_set)
+        tap_device_name = 'tap{}'.format(tap_name_index)
         if params.get('ipv4_addr'):
             os.system('ip l del {} 2>/dev/null'.format(tap_device_name))
             os.system('ip tuntap add {} mode tap'.format(tap_device_name))
             os.system('ip addr add {}/24 dev {}'.format(trans(params['ipv4_addr']), tap_device_name))
             os.system('ip link set dev {} up'.format(tap_device_name))
         cfg = CunikConfig(
-            name=image_name + str(CunikApi.counter[image_name]),
+            name=image_name + str(image_name_index),
             image=image_name,
             cmdline=CunikConfig.fill('images/{}/cmdline'.format(image_name), 'images/{}/params.json'.format(image_name),
                                      **params),
@@ -193,6 +228,7 @@ class CunikApi:
             >>>     print(cunik["create_time"])
             >>>     print(cunik["name"])
         """
+        from api.models.cunik_registry import cunik_registry
         return [cunik_registry.query(i) for i in cunik_registry.get_id_list()]
 
     @staticmethod
@@ -208,6 +244,7 @@ class CunikApi:
             >>> print(cunik["params"])
             >>> print(cunik["params"]["ipv4_addr"])
         """
+        from api.models.cunik_registry import cunik_registry
         return cunik_registry.query(cid)
 
     @staticmethod
@@ -218,6 +255,7 @@ class CunikApi:
             >>> id = 'acb123'
             >>> CunikApi.stop(id)
         """
+        from api.models.cunik_registry import cunik_registry
         cunik_registry.query(cid).stop()
 
     @staticmethod
@@ -228,4 +266,5 @@ class CunikApi:
             >>> id = 'acb123'
             >>> CunikApi.remove(id)
         """
-        cunik_registry.remove(cunik_registry.query(cid))
+        from api.models.cunik_registry import cunik_registry
+        cunik_registry.query(cid).destroy()

@@ -17,33 +17,22 @@ delay_time = 2
 start_time = time.time()
 
 for i in range(1, T + 1):
-    CunikApi.create('nginx', params={'ipv4_addr': '10.{}.{}.101'.format(120 + i // 100, 120 + i % 100)})
+    CunikApi.create('nginx', params={'ipv4_addr': '10.120.{}.101'.format(i)})
     print('Started cunik{}'.format(i))
-
-time.sleep(delay_time)
 cnt = 0
-
-for i in range(1, T + 1):
-    if not os.system('curl 10.{}.{}.101'.format(120 + i // 100, 120 + i % 100)):
-        cnt += 1
 
 end_time = time.time()
 
-if cnt == T:
-    print('TEST PASSED!')
-else:
-    print('TEST FAILED!')
-
 print('Time elapsed: {} sec'.format(end_time - start_time - delay_time))
 
-# input('')
+input('All running')
 
 for i in CunikApi.list():
-    CunikApi.stop(i.id)
+    CunikApi.stop(i.uuid)
 
 print('All stopped')
 
 for i in CunikApi.list():
-    CunikApi.remove(i.id)
+    CunikApi.remove(i.uuid)
 
 print('All removed')
