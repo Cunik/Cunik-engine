@@ -1,4 +1,4 @@
 {
-  "nginx_test_volume": "../images/nginx/rootfs.iso",
-  "redis-server_test_volume": "../images/redis-server/rootfs.iso"
+  "nginx_default": "nginx/rootfs.iso",
+  "redis-server_default": "redis-server/rootfs.iso"
 }
