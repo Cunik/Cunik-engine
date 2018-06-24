@@ -21,11 +21,22 @@ class CunikRegistry:
         else:
             self._cuniks = dict()
 
-    def convert_from_json(self, s: str):
-        return {uuid.UUID(k): Cunik.from_json(v) for k, v in json.loads(s).items()}
+    @staticmethod
+    def convert_from_json(s: str):
+        d = {}
+        for k, v in json.loads(s).items():
+            w = Cunik.from_json(v)
+            if w is not None:
+                d[uuid.UUID(k)] = w
+        return d
 
     def convert_to_json(self):
-        return {str(k): v.to_json() for k, v in self._cuniks.items()}
+        d = {}
+        for k, v in self._cuniks.items():
+            w = v.to_json()
+            if w is not None:
+                d[str(k)] = w
+        return d
 
     def save(self):
         if self.registry_file:

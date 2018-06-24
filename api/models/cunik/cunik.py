@@ -126,7 +126,6 @@ class Cunik:
         """Start the cunik."""
         # Start the vm
         self.vm.start()
-        self.state = 'Running'
         # Update in registry
         from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
@@ -135,7 +134,6 @@ class Cunik:
         """Stop the cunik."""
         # Stop the vm
         self.vm.stop()
-        self.state = 'Stopped'
         # Update in registry
         from api.models.cunik_registry import cunik_registry
         cunik_registry.populate(self)
@@ -144,25 +142,21 @@ class Cunik:
         """Destroy a cunik according to the config."""
         # Destroy the vm
         self.vm.destroy()
-        self.state = 'Destroyed'
         # Remove from registry
         from api.models.cunik_registry import cunik_registry
         cunik_registry.remove(self)
 
     def to_json(self):
-        return {'state': self.state, 'vm': self.vm.to_json()}
+        return {'vm': self.vm.to_json()}
 
     @staticmethod
     def from_json(cunik_json: dict):
         res = Cunik()
         try:
-            res.state = cunik_json['state']
-        except KeyError:
-            print('[ERROR] Cunik registry data error', file=sys.stderr)
-        try:
             res.vm = VM.from_json(cunik_json['vm'])
         except KeyError:
             print('[ERROR] Cunik registry data error', file=sys.stderr)
+            return None
         return res
 
 
@@ -194,9 +188,10 @@ class CunikApi:
         with open(path.join(cunik_root, 'images', image_name, 'config.json')) as f:
             default_config = json.load(f)
         if default_config.get('data_volume'):
-            data_volume_registry.add_volume_path(image_name,
-                                                 '../images/{}/{}'.format(image_name, default_config['data_volume']))
-            default_config['data_volume'] = image_name
+            if not params.get('data_volume'):
+                default_config['data_volume'] = '{}_default'.format(image_name)
+            else:
+                default_config['data_volume'] = params['data_volume']
         image_name_set = {i.name for i in CunikApi.list()}
         image_name_index = mex(image_name, image_name_set)
         tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}

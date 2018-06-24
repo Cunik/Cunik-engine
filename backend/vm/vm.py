@@ -166,12 +166,18 @@ class VM:
             self.domain.create()
 
     def stop(self):
-        self.domain.suspend()
+        # This is necessary because the vm may not be running
+        try:
+            self.domain.suspend()
+        except lv.libvirtError:
+            pass
 
     def destroy(self):
         # This is necessary because the vm may not be running
         try:
             self.domain.destroy()
+        except lv.libvirtError:
+            pass
         finally:
             self.domain.undefine()
 
@@ -182,7 +188,11 @@ class VM:
         conn = lv.open('')
         if conn is None:
             print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
-        res.domain = conn.lookupByUUIDString(res.uuid)
+        try:
+            res.domain = conn.lookupByUUIDString(res.uuid)
+        except lv.libvirtError:
+            print('[ERROR] VM instance with UUID={} not found'.format(res.uuid), file=sys.stderr)
+            raise KeyError
         if res.domain is None:
             print('[ERROR] Failed to find the domain with UUID={}'.format(res.uuid), file=sys.stderr)
         conn.close()
