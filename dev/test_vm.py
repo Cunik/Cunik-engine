@@ -6,11 +6,12 @@ import backend.vm as V
 
 import config
 
-image_root = os.path.join(config.cunik_root, 'images/nginx')
+images_root = os.path.join(config.cunik_root, 'images/nginx')
+volumes_root = os.path.join(config.cunik_root, 'volumes/nginx')
 
 conf = V.VMConfig()
 conf.name = 'Cunik_by_VM'
-conf.image_path = os.path.join(image_root, 'kernel.img')
+conf.image_path = os.path.join(images_root, 'kernel.img')
 conf.cmdline = '''{,,
     "blk" :  {,,
         "source": "dev",,
@@ -28,7 +29,7 @@ conf.cmdline = '''{,,
     "cmdline": "./nginx.bin -c /data/conf/nginx.conf",,
 },,'''
 conf.memory_size = 256*1024  # 256 MB
-conf.vdisk_path = os.path.join(image_root, 'rootfs.iso')
+conf.vdisk_path = os.path.join(volumes_root, 'rootfs.iso')
 conf.nic = 'tap0'
 conf.hypervisor = 'kvm'
 vm = V.VM(conf)
