@@ -22,19 +22,22 @@ class VMConfig:
     Usage:
         >>> vmc = VMConfig()  # A new VMConfig with default parameters, and key parameters are None
         >>> vmc.name = 'Cunik0'
-        >>> vmc.image_path = './example.img'  # This has to be set
+        >>> vmc.kernel_path = './example.img'  # This has to be set
         >>> vmc.cmdline = './hello_world'  # Command line passed to kernel
         >>> vmc.memory_size = 1024  # Memory size in KB
-        >>> vmc.vdisk_path = 'disk.iso'  # Vritual disk
+        >>> vmc.vdisk_path = 'disk.iso'  # Virtual disk
         >>> vmc.nic = 'tap0'  # Network interface card
         >>> vmc.hypervisor = 'kvm'  # VM type
         >>> vmc.to_xml()  # Convert to XML for libvirt
+
+    Usage(without standalone kernel):
+        >>> vmc.system_image = './example.qcow'
     """
     available_hypervisors = ['kvm']
 
     def __init__(self):
         self.name = None
-        self.image_path = None
+        self.kernel_path = None
         self.cmdline = None
         self.memory_size = 1024
         self.vdisk_path = None
@@ -60,7 +63,7 @@ class VMConfig:
         """Check if non-default parameters have been set.
             By non-default, I mean that it is None by default and have to be set before generation XML.
         """
-        return all([self.name, self.image_path, self.hypervisor, self.vdisk_path])
+        return all([self.name, self.kernel_path, self.hypervisor, self.vdisk_path])
 
     def to_xml(self):
         """Generate XML representation for libvirt.
@@ -80,10 +83,12 @@ class VMConfig:
         os = ET.SubElement(domain, 'os')
         tp = ET.SubElement(os, 'type')
         tp.text = 'hvm'
-        kernel = ET.SubElement(os, 'kernel')
-        kernel.text = self.image_path
-        cmdline = ET.SubElement(os, 'cmdline')
-        cmdline.text = 'console=ttyS0 ' + self.cmdline
+        if self.kernel_path is not None:
+            kernel = ET.SubElement(os, 'kernel')
+            kernel.text = self.kernel_path
+        if self.cmdline is not None:
+            cmdline = ET.SubElement(os, 'cmdline')
+            cmdline.text = 'console=ttyS0 ' + self.cmdline
 
         memory = ET.SubElement(domain, 'memory')
         memory.text = str(self.memory_size)
@@ -99,7 +104,7 @@ class VMConfig:
         target.set('dev', 'vda')
         target.set('bus', 'virtio')
         driver = ET.SubElement(disk, 'driver')
-        driver.set('type', 'raw')
+        # driver.set('type', 'raw')
         driver.set('name', 'qemu')
         readonly = ET.SubElement(disk, 'readonly')  # needed for qemu >= 2.10, for its image locking feature.
 
