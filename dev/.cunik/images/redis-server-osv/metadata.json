@@ -10,5 +10,6 @@
         "version": null,
         "name": "osv"
     },
-    "description": "Redis server by OSv"
+    "description": "Redis server by OSv",
+    "system_volume": "system.qcow"
 }
