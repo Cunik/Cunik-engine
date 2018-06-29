@@ -1,6 +1,6 @@
 import libvirt as lv
 import xml.etree.cElementTree as ET
-import sys
+import sys, os
 
 
 class InvalidVMConfigError(Exception):
@@ -162,19 +162,34 @@ class VM:
     def __init__(self, config=None):
         # TODO: should we define then start or just create?
         if config is not None:
-            conn = lv.open('')  # TODO: set URI by vm type
-            if conn is None:
-                print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
-            self.domain = conn.defineXML(config.to_xml())
-            self.uuid = self.domain.UUIDString()
-            conn.close()
+            if config.kernel_path is None or config.cmdline is None:
+                self.config = config
+                self.uuid = '75cb9413-13fd-457d-8e3c-d3dbc1102f80'
+            else:
+                conn = lv.open('')
+                if conn is None:
+                    print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
+                self.domain = conn.defineXML(config.to_xml())
+                self.uuid = self.domain.UUIDString()
+                conn.close()
+                self.config = None
 
     def start(self):
         """Start the vm, may raise exception."""
-        if self.domain.isActive():
-            self.domain.resume()
+        if self.config is not None:
+            cmd = '/usr/bin/qemu-system-x86_64 ' \
+                  ' -enable-kvm -nographic -m 1024 ' \
+                  ' -drive file={},if=virtio,cache=none,format=qcow2' \
+                  ' -net tap,script=no,ifname={} -net nic,model=virtio > /dev/null &'.format(
+                self.config.vdisk_path,
+                self.config.nic
+                )
+            os.system(cmd)
         else:
-            self.domain.create()
+            if self.domain.isActive():
+                self.domain.resume()
+            else:
+                self.domain.create()
 
     def stop(self):
         # This is necessary because the vm may not be running
