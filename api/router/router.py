@@ -4,5 +4,8 @@
 """
 
 from .route import Route
+from .cunik import cunik_bp
 
-routes = []
+routes = [
+    Route(cunik_bp, '/cunik')
+]

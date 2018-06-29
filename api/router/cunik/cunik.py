@@ -1,19 +1,36 @@
 """Take the parameters from router, parse them, execute and return the results."""
+from flask import request, jsonify, Blueprint
+
+from api.models.cunik import CunikApi
+
+bp = Blueprint('cunik', __name__)
 
 
+@bp.route('/create', methods=['POST'])
 def create():
-    pass
+    image_name = request.form.get('image_name')
+    params = request.form
+    return jsonify(CunikApi.create(image_name=image_name, params=params))
 
 
-def info():
-    pass
-
-
+@bp.route('/list', methods=['GET'])
 def list():
-    pass
+    return jsonify(CunikApi.list())
 
+
+@bp.route('/info', methods=['POST'])
+def info():
+    cid = request.form.get('cid')
+    return CunikApi.info(cid=cid)
+
+
+@bp.route('/stop', methods=['POST'])
 def stop():
-    pass
+    cid = request.form.get('cid')
+    return CunikApi.stop(cid=cid)
 
+
+@bp.route('/remove', methods=['POST'])
 def remove():
-    pass
+    cid = request.form.get('cid')
+    return CunikApi.remove(cid=cid)
