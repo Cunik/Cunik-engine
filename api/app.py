@@ -14,6 +14,7 @@ def create_app(config_name='default'):
     from .router import routes
 
     for r in routes:
+        print('register bp with prefix: {}' % r.prefix)
         app.register_blueprint(r.bp, url_prefix=r.prefix)
 
     return app
