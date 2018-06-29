@@ -16,8 +16,8 @@ class CunikConfig:
     """Config of a cunik, constructed when the user wants to create a Cunik."""
 
     def __init__(self, **kwargs):
-        vital_keys_set = {'name', 'image', 'cmdline', 'hypervisor', 'memory', 'system_volume_type'}
-        all_keys_set = set.union(vital_keys_set, {'nic', 'data_volume'})
+        vital_keys_set = {'name', 'image', 'hypervisor', 'memory'}
+        all_keys_set = set.union(vital_keys_set, {'nic', 'data_volume', 'cmdline'})
         if not set(kwargs.keys()) <= all_keys_set:
             raise KeyError('[ERROR] ' + list(set(kwargs.keys()) - all_keys_set)[0] +
                            ' is an invalid keyword argument for this function')
@@ -26,29 +26,12 @@ class CunikConfig:
                            ' is a vital keyword argument for this function but has not been set')
         # name of Cunik instance
         self.name = kwargs.get('name')
-        if not kwargs['system_volume_type']:
-            # path to image file
-            try:
-                self.image = image_registry.get_image_path(kwargs.get('image'))
-            except KeyError as KE:
-                print('[ERROR] cannot find kernel image {} in registry'.format(kwargs['image']), file=sys.stderr)
-                raise KE
-            # data volume name
-            if kwargs.get('data_volume'):
-                try:
-                    self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])
-                except KeyError as KE:
-                    print('[ERROR] cannot find data volume {} in registry'.format(kwargs['data_volume']),
-                          file=sys.stderr)
-                    raise KE
-        else:
-            # path to system volume file
-            try:
-                self.data_volume = image_registry.get_image_path(kwargs.get('image'))
-            except KeyError as KE:
-                print('[ERROR] cannot find system volume {} in registry'.format(kwargs['image']), file=sys.stderr)
-                raise KE
-
+        # path to image file
+        try:
+            self.image = image_registry.get_image_path(kwargs.get('image'))
+        except KeyError as KE:
+            print('[ERROR] cannot find image {} in registry'.format(kwargs['image']), file=sys.stderr)
+            raise KE
         # command line parameters
         self.cmdline = kwargs.get('cmdline')
         # VM type
@@ -65,6 +48,13 @@ class CunikConfig:
         except AssertionError as AE:
             print('[ERROR] memory size must be a positive integer', file=sys.stderr)
             raise AE
+        # data volume name
+        if kwargs.get('data_volume'):
+            try:
+                self.data_volume = data_volume_registry.get_volume_path(kwargs['data_volume'])
+            except KeyError as KE:
+                print('[ERROR] cannot find data volume {} in registry'.format(kwargs['data_volume']), file=sys.stderr)
+                raise KE
 
     @staticmethod
     def fill(path_to_cmdline: str, path_to_params: str, **kwargs):
@@ -108,15 +98,13 @@ class Cunik:
 
     def __init__(self, config=None):
         """Initialize the cunik"""
-        # Create the vm with the image
+
         if config is not None:
             self.state = 'Not started'
             vmc = VMConfig()
             vmc.name = config.name
-            try:
-                vmc.kernel_path = config.image
-            except AttributeError:
-                vmc.kernel_path = None
+            vmc.kernel_path = config.image
+            vmc.cmdline = config.cmdline
             vmc.vdisk_path = config.data_volume
             vmc.hypervisor = config.hypervisor
             vmc.nic = config.nic
@@ -199,12 +187,28 @@ class CunikApi:
             params = {}
         with open(path.join(default_config.CUNIK_ROOT, 'images', image_name, 'config.json')) as f:
             default_conf = json.load(f)
+        cmdline = None
         with open(path.join(default_config.CUNIK_ROOT, 'images', image_name, 'metadata.json')) as f:
             metadata = json.load(f)
-            if metadata.get("system_volume"):
-                default_conf['system_volume_type'] = True
+            try:
+                unikernel_type = metadata['unikernel']['name']
+            except KeyError:
+                raise KeyError
             else:
-                default_conf['system_volume_type'] = False
+                if unikernel_type == 'osv':
+                    from backend.unikernel.osv import preprocess
+                    # empty
+                elif unikernel_type == 'rumprun':
+                    from backend.unikernel.rumprun import preprocess
+                    # cmdline
+                else:
+                    print('Unsupported Unikernel type', file=sys.stderr)
+                    raise ValueError
+                cmdline = CunikConfig.fill('images/{}/cmdline'.format(image_name),
+                                           'images/{}/params.json'.format(image_name), **params),
+                cmdline = preprocess(path.join(default_config.CUNIK_ROOT, 'images', metadata['system_volume']), cmdline)
+        if cmdline is not None:
+            default_conf['cmdline'] = cmdline
         if default_conf.get('data_volume'):
             if not params.get('data_volume'):
                 default_conf['data_volume'] = '{}_default'.format(image_name)
@@ -223,8 +227,6 @@ class CunikApi:
         cfg = CunikConfig(
             name=image_name + str(image_name_index),
             image=image_name,
-            cmdline=CunikConfig.fill('images/{}/cmdline'.format(image_name), 'images/{}/params.json'.format(image_name),
-                                     **params),
             nic=tap_device_name,
             **default_conf
         )
