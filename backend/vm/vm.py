@@ -196,7 +196,7 @@ class VM:
         if self.config is not None:
             return
         try:
-                self.domain.suspend()
+            self.domain.suspend()
         except lv.libvirtError:
             pass
 
