@@ -1,6 +1,6 @@
 import json
 from os import path
-from config import cunik_root
+from api.config import default_config
 
 
 class DataVolumeRegistry:
@@ -12,7 +12,7 @@ class DataVolumeRegistry:
     """
 
     def __init__(self):
-        self.root = path.abspath(path.join(cunik_root, 'volumes'))
+        self.root = path.abspath(path.join(default_config.CUNIK_ROOT, 'volumes'))
         with open(path.join(self.root, 'metadata.json'), 'r') as fp:
             self.volumes = json.load(fp)
 
