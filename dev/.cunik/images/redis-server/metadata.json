@@ -8,7 +8,7 @@
     "unikernel": {
         "url": "http://rumpkernel.org/",
         "version": null,
-        "name": "rumpkernel"
+        "name": "rumprun"
     },
     "description": "Redis server"
 }

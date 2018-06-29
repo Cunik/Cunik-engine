@@ -6,7 +6,7 @@
     ],
     "version": "0.0.1",
     "unikernel": {
-        "url": "http://osv.io//",
+        "url": "http://osv.io/",
         "version": null,
         "name": "osv"
     },

@@ -202,8 +202,8 @@ class CunikApi:
                     print('Unsupported Unikernel type', file=sys.stderr)
                     raise ValueError
                 cmdline = CunikConfig.fill('images/{}/cmdline'.format(image_name),
-                                           'images/{}/params.json'.format(image_name), **params),
-                cmdline = preprocess(path.join(default_config.CUNIK_ROOT, 'images', metadata['system_volume']), cmdline)
+                                           'images/{}/params.json'.format(image_name), **params)
+                cmdline = preprocess(path.join(default_config.CUNIK_ROOT, 'images', image_name), cmdline)
         if cmdline is not None:
             default_conf['cmdline'] = cmdline
         if default_conf.get('data_volume'):

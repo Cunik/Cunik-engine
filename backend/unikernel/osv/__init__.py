@@ -3,10 +3,10 @@
 
 from .imgedit import set_cmdline
 from backend.vm import VMConfig
-from sys import path
+from os import path
 
 
 # Takes Unikernel specific configs, generate a VMConfig
 def preprocess(image_root, cmdline):
     set_cmdline(path.join(image_root, 'system.qcow'), cmdline)
-    return {'cmdline': cmdline}
+    return None
