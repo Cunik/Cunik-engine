@@ -3,7 +3,7 @@
 
 from .imgedit import set_cmdline
 from backend.vm import VMConfig
-from sys import path
+from os import path
 
 
 # Takes Unikernel specific configs, generate a VMConfig

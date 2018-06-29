@@ -4,7 +4,7 @@ import sys, struct
 import subprocess
 import time
 
-from nbd_client import nbd_client
+from .nbd_client import nbd_client
 from random import randint
 
 
