@@ -10,8 +10,8 @@ bp = Blueprint('cunik', __name__)
 def create():
     image_name = request.form.get('image_name')
     params = {}
-    for k,v in request.form:
-        params[k] = v
+    for item in request.form:
+        params[item[0]] = item[1]
     return jsonify(CunikApi.create(image_name=image_name, params=params))
 
 
