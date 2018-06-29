@@ -12,4 +12,4 @@ install:
 before_script:
   - chmod +x ./CI/before_script.sh && ./CI/before_script.sh
 
-script: cp config.py.sample config.py && python engine.py test
+script: python engine.py test
