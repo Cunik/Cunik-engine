@@ -1,4 +1,4 @@
 #!/bin/sh
 
-mkdir -p /var/cunik
-cp -R dev/.cunik /var/cunik
+sudo mkdir -p /var/cunik
+sudo cp -R dev/.cunik /var/cunik
