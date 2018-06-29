@@ -180,7 +180,7 @@ class VM:
             cmd = '/usr/bin/qemu-system-x86_64 ' \
                   ' -enable-kvm -nographic -m 1024 ' \
                   ' -drive file={},if=virtio,cache=none,format=qcow2' \
-                  ' -net tap,script=no,ifname={} -net nic,model=virtio > /dev/null &'.format(
+                  ' -net tap,script=no,ifname={} -net nic,model=virtio >/dev/null 2>/dev/null &'.format(
                 self.config.vdisk_path,
                 self.config.nic
                 )
@@ -193,13 +193,17 @@ class VM:
 
     def stop(self):
         # This is necessary because the vm may not be running
+        if self.config is not None:
+            return
         try:
-            self.domain.suspend()
+                self.domain.suspend()
         except lv.libvirtError:
             pass
 
     def destroy(self):
         # This is necessary because the vm may not be running
+        if self.config is not None:
+            return
         try:
             self.domain.destroy()
         except lv.libvirtError:
