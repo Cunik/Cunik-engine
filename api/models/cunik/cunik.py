@@ -74,10 +74,9 @@ class CunikConfig:
             print('[ERROR] params file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         params.update(kwargs)
-        for k, v in kwargs.items():
+        for k, v in params.items():
             cmdline = cmdline.replace('{{' + k + '}}', v)
         return cmdline
-
 
 
 class Cunik:
@@ -211,6 +210,8 @@ class CunikApi:
                 default_conf['data_volume'] = '{}_default'.format(image_name)
             else:
                 default_conf['data_volume'] = params['data_volume']
+        else:
+            default_conf['data_volume'] = image_name + '_default'
         image_name_set = {i.name for i in CunikApi.list()}
         image_name_index = mex(image_name, image_name_set)
         tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
