@@ -1,3 +1,0 @@
-import os.path
-
-cunik_root = os.path.join(os.path.abspath('.'), 'dev/.cunik')

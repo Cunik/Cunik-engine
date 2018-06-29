@@ -1,7 +1,7 @@
 import json
 from os import path
 
-from config import cunik_root
+from api.config import default_config
 
 
 class NetworkConfigRegistry:
@@ -12,7 +12,7 @@ class NetworkConfigRegistry:
         >>> pt = nc.get_config_path('test_networkconfig')
     """
     def __init__(self):
-        self.root = path.abspath(path.join(cunik_root, 'networkconfigs'))
+        self.root = path.abspath(path.join(default_config.CUNIK_ROOT, 'networkconfigs'))
         with open(path.join(self.root, 'metadata.json'), 'r') as fp:
             self.configs = json.load(fp)
 

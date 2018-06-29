@@ -6,9 +6,9 @@ sys.path.append(os.path.abspath('.'))
 
 from api.models.cunik import CunikApi
 
-import config
+from api.config import default_config
 
-image_root = os.path.join(config.cunik_root, 'images/nginx')
+image_root = os.path.join(default_config.CUNIK_ROOT, 'images/nginx')
 
 T = 200
 

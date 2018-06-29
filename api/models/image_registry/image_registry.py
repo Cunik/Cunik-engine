@@ -1,6 +1,6 @@
 import json
 from os import path
-from config import cunik_root
+from api.config import default_config
 
 
 class ImageRegistry:
@@ -12,7 +12,7 @@ class ImageRegistry:
     """
 
     def __init__(self):
-        self.root = path.abspath(path.join(cunik_root, 'images'))
+        self.root = path.abspath(path.join(default_config.CUNIK_ROOT, 'images'))
         with open(path.join(self.root, 'images.json'), 'r') as fp:
             self.images = json.load(fp)
 

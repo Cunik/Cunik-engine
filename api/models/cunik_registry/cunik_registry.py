@@ -4,7 +4,7 @@ import datetime
 import time
 import uuid
 import os
-from api.config import BaseConfig
+from api.config import default_config
 from api.utils import ensure_file
 from api.models.cunik import Cunik
 
@@ -14,8 +14,8 @@ class CunikRegistry:
 
     def __init__(self, registry_file):
         if registry_file:
-            ensure_file(BaseConfig.REGISTRY_ROOT, registry_file, content=json.dumps(dict()))
-            self.registry_file = BaseConfig.CUNIK_REGISTRY_FILE
+            ensure_file(default_config.REGISTRY_ROOT, registry_file, content=json.dumps(dict()))
+            self.registry_file = default_config.CUNIK_REGISTRY_FILE
             with open(self.registry_file) as fp:
                 self._cuniks = self.convert_from_json(fp.read())
         else:
@@ -66,4 +66,4 @@ class CunikRegistry:
         return list(self._cuniks.keys())
 
 
-cunik_registry = CunikRegistry(BaseConfig.CUNIK_REGISTRY_FILE)
+cunik_registry = CunikRegistry(default_config.CUNIK_REGISTRY_FILE)

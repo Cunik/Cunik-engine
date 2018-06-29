@@ -4,7 +4,7 @@ from api.models.image_registry import image_registry
 from api.models.data_volume_registry import data_volume_registry
 from backend.vm import VM, VMConfig
 from os import path
-from config import cunik_root
+from api.config import default_config
 import json
 import sys
 import os
@@ -59,13 +59,13 @@ class CunikConfig:
     @staticmethod
     def fill(path_to_cmdline: str, path_to_params: str, **kwargs):
         try:
-            with open(path.join(cunik_root, path_to_cmdline)) as f:
+            with open(path.join(default_config.CUNIK_ROOT, path_to_cmdline)) as f:
                 cmdline = f.read()
         except IOError as IE:
             print('[ERROR] cmdline file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         try:
-            with open(path.join(cunik_root, path_to_params)) as f:
+            with open(path.join(default_config.CUNIK_ROOT, path_to_params)) as f:
                 params = json.loads(f.read())
         except ValueError as VE:
             print('[ERROR] {0} is not a valid json file: {1}'.format(path_to_params, VE), file=sys.stderr)
@@ -185,13 +185,13 @@ class CunikApi:
 
         if not params:
             params = {}
-        with open(path.join(cunik_root, 'images', image_name, 'config.json')) as f:
-            default_config = json.load(f)
-        if default_config.get('data_volume'):
+        with open(path.join(default_config.CUNIK_ROOT, 'images', image_name, 'config.json')) as f:
+            default_conf = json.load(f)
+        if default_conf.get('data_volume'):
             if not params.get('data_volume'):
-                default_config['data_volume'] = '{}_default'.format(image_name)
+                default_conf['data_volume'] = '{}_default'.format(image_name)
             else:
-                default_config['data_volume'] = params['data_volume']
+                default_conf['data_volume'] = params['data_volume']
         image_name_set = {i.name for i in CunikApi.list()}
         image_name_index = mex(image_name, image_name_set)
         tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
@@ -208,7 +208,7 @@ class CunikApi:
             cmdline=CunikConfig.fill('images/{}/cmdline'.format(image_name), 'images/{}/params.json'.format(image_name),
                                      **params),
             nic=tap_device_name,
-            **default_config
+            **default_conf
         )
         Cunik(cfg).start()
 
