@@ -1,3 +1,3 @@
 #!/bin/sh
 
-mv dev/.cunik /var/cunik
+sudo mv dev/.cunik /var/cunik

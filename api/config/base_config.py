@@ -12,7 +12,4 @@ class BaseConfig:
 
     @staticmethod
     def init_app(app):
-        handler = RotatingFileHandler(BaseConfig.LOG_FILE, maxBytes=10000, backupCount=1)
-        handler.setLevel(logging.WARNING)
-        app.logger.addHandler(handler)
-
+        pass
