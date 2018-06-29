@@ -11,28 +11,28 @@ Containers are a good isolation mechanism, but not good enough.
 
 ### Safety
 
-As for containers, once a application has any security problem, it will affect all the applications which run on the same operating system. Luckily, unikernel can solve the problem better.
+As for containers, once an application has any security problems, it will affect all the applications which are running on the same operating system. Luckily, unikernel can solve the problem better.
 
 ### Efficiency
 
-The success of docker increases the availability of system resources greatly. However, because docker gnerally runs on a streamline Linux kernel system, it's speed is limited by the Linux kernel. Otherwise, unikernel can meet the needs of customized cores and it  can reduce performance overhead.
+The success of Docker increases the availability of system resources greatly. However, since Docker generally runs on a streamlined Linux kernel system, its speed is limited by the Linux kernel. Otherwise, unikernel can meet the needs of customized cores and it can reduce performance overhead.
 
-Unikernel is a good candidate for improving efficiency and safety. However, it is hard to build and manage, since there is so many different implementations and each of them uses different tool chains in building and deploying.
+Unikernel is a good candidate for improving efficiency and safety. However, it is hard to build and manage, since there are so many different implementations and each of them uses different toolchains when building and deploying.
 
-So we present Cunik, which aims at enabling you get Unikernel images and deploy them in several commands, and easy to configure just like writing Dockerfiles.
+So we present Cunik, which aims at enabling you to get Unikernel images and deploy them in several commands, and it is easy to configure just like writing Dockerfiles.
 
 ## What can you do with it?
 
 By using Cunik, you can:
 
 - get better isolation and higher performance than using container techs;
-- easily build and manage unikernel applications than directly play with unikernel implementations like Rumprun, ClickOS.
+- easily build and manage unikernel applications than directly playing with unikernel implementations like Rumprun and ClickOS.
 
 ## Getting started
 
 These instructions will get you running Cunik Engine and a Cunik-nginx on your machine.
 
-First of all, let's get the source code:
+First, let's get the source code:
 
 ```shell
 git clone https://github.com/Cunik/Cunik-engine.git
@@ -44,17 +44,17 @@ Then install all the dependencies:
 pip3 install -r requirements.txt
 ```
 
-A Cunik engine is a deamon that listens on the host and waits for requests from clients. Now, let's launch the Cunik engine.
+A Cunik Engine is a daemon that listens on the host and waits for requests from clients. Now, let's launch the Cunik Engine.
 
-Copy `config.py.sample` to `config.py`, and make sure it's right.
+Copy `config.py.sample` to `config.py`, and make sure it's correct.
 
-Run the deamon:
+Run the daemon:
 
 ```shell
 python3 engine.py runserver
 ```
 
-Test the API by sending request manually.
+Test the API by sending requests manually.
 
 ## Contributing
 
