@@ -4,10 +4,10 @@ sys.path.append(os.path.abspath('.'))
 
 import backend.vm as V
 
-import config
+from api.config import default_config
 
-images_root = os.path.join(config.cunik_root, 'images/nginx')
-volumes_root = os.path.join(config.cunik_root, 'volumes/nginx')
+images_root = os.path.join(default_config.CUNIK_ROOT, 'images/nginx')
+volumes_root = os.path.join(default_config.CUNIK_ROOT, 'volumes/nginx')
 
 conf = V.VMConfig()
 conf.name = 'Cunik_by_VM'

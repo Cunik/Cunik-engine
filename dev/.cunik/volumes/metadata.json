@@ -1,4 +1,0 @@
-{
-  "nginx_default": "nginx/rootfs.iso",
-  "redis-server_default": "redis-server/rootfs.iso"
-}
