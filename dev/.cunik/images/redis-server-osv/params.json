@@ -1,0 +1,4 @@
+{
+    "ipv4_addr": "10.0.120.101",
+    "extra_cmdline": "/redis-server redis.conf"
+}

@@ -11,7 +11,7 @@ volumes_root = os.path.join(default_config.CUNIK_ROOT, 'volumes/nginx')
 
 conf = V.VMConfig()
 conf.name = 'Cunik_by_VM'
-conf.image_path = os.path.join(images_root, 'kernel.img')
+conf.kernel_path = os.path.join(images_root, 'kernel.img')
 conf.cmdline = '''{,,
     "blk" :  {,,
         "source": "dev",,

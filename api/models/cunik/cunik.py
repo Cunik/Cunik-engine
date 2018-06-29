@@ -103,7 +103,7 @@ class Cunik:
             self.state = 'Not started'
             vmc = VMConfig()
             vmc.name = config.name
-            vmc.image_path = config.image
+            vmc.kernel_path = config.image
             vmc.cmdline = config.cmdline
             vmc.vdisk_path = config.data_volume
             vmc.hypervisor = config.hypervisor
