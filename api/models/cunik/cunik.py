@@ -74,13 +74,10 @@ class CunikConfig:
             print('[ERROR] params file not found: {0}'.format(IE), file=sys.stderr)
             raise IE
         params.update(kwargs)
-        list_of_cmdline = cmdline.split('"')
-        try:
-            list_of_cmdline = [params[p[2:-2]] if p[:2] == '{{' and p[-2:] == '}}' else p for p in list_of_cmdline]
-        except KeyError as KE:
-            print('[ERROR] params in cmdline not filled: {0}'.format(KE), file=sys.stderr)
-            raise KE
-        return '"'.join(list_of_cmdline)
+        for k, v in kwargs.items():
+            cmdline = cmdline.replace('{{' + k + '}}', v)
+        return cmdline
+
 
 
 class Cunik:
