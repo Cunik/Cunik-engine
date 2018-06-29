@@ -1,4 +1,5 @@
 {
     "nginx": "nginx/kernel.img",
-    "redis-server": "redis-server/kernel.img"
+  "redis-server": "redis-server/kernel.img",
+  "redis-server-osv": "redis-server-osv/system.qcow"
 }

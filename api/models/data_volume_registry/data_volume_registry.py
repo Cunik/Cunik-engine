@@ -27,6 +27,8 @@ class DataVolumeRegistry:
         self.volumes[volume_name] = volume_path
 
     def get_volume_path(self, volume_name: str):
+        if self.volumes[volume_name] == '<None>':
+            return None
         return path.join(self.root, self.volumes[volume_name])
 
 

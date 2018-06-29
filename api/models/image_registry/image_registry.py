@@ -17,7 +17,8 @@ class ImageRegistry:
             self.images = json.load(fp)
 
     def get_image_path(self, name: str):
-        return path.join(self.root, self.images[name])
+        path_to_image = path.join(self.root, self.images[name])
+        return path_to_image
 
 
 image_registry = ImageRegistry()

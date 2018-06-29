@@ -63,7 +63,13 @@ class VMConfig:
         """Check if non-default parameters have been set.
             By non-default, I mean that it is None by default and have to be set before generation XML.
         """
-        return all([self.name, self.kernel_path, self.hypervisor, self.vdisk_path])
+        if not self.name:
+            print('[ERROR] vm name not set', file=sys.stderr)
+        if not self.hypervisor:
+            print('[ERROR] vm hypervisor not set', file=sys.stderr)
+        if not self.vdisk_path:
+            print('[ERROR] vm vdisk path not set', file=sys.stderr)
+        return all([self.name, self.vdisk_path, self.hypervisor])
 
     def to_xml(self):
         """Generate XML representation for libvirt.

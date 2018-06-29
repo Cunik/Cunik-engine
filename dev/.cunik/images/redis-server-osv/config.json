@@ -1,5 +1,4 @@
 {
   "memory": "163840",
-  "hypervisor": "kvm",
-  "data_volume": "rootfs.iso"
+  "hypervisor": "kvm"
 }
