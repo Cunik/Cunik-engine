@@ -7,9 +7,9 @@ before_install:
   - sudo apt-get install -qq libvirt-dev
 
 install:
-  - pip install -r requirements.txt
+  - sudo pip install -r requirements.txt
 
 before_script:
-  - chmod +x ./CI/before_script.sh && ./CI/before_script.sh
+  - sudo chmod +x ./CI/before_script.sh && sudo ./CI/before_script.sh
 
-script: python engine.py test
+script: sudo python engine.py test
