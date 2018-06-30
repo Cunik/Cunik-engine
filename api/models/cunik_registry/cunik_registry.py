@@ -60,7 +60,9 @@ class CunikRegistry:
         self.save()
 
     def query(self, cid: uuid.UUID):
-        return self._cuniks.get(uuid.UUID(cid))
+        if isinstance(cid, str):
+            cid = uuid.UUID(cid)
+        return self._cuniks.get(cid)
 
     def get_id_list(self):
         return list(self._cuniks.keys())

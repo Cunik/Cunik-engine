@@ -216,7 +216,7 @@ class CunikApi:
                 default_conf['data_volume'] = params['data_volume']
         else:
             default_conf['data_volume'] = image_name + '_default'
-        image_name_set = {CunikApi.info(i)['name'] for i in CunikApi.list()}
+        image_name_set = {json.loads(CunikApi.info(i))['name'] for i in CunikApi.list()}
         image_name_index = mex(image_name, image_name_set)
         tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
         tap_name_index = mex('tap', tap_name_set)

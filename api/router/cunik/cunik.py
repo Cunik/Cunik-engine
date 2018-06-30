@@ -12,8 +12,8 @@ bp = Blueprint('cunik', __name__)
 def create():
     image_name = request.form.get('image_name')
     params = {}
-    for item in request.form:
-        params[item[0]] = item[1]
+    params['ipv4_addr'] = request.form.get('ipv4_addr')
+    print(image_name, params, '=======================')
     return CunikApi.create(image_name=image_name, params=params)
 
 
