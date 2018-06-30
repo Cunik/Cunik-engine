@@ -1,4 +1,6 @@
 """Take the parameters from router, parse them, execute and return the results."""
+import json
+
 from flask import request, jsonify, Blueprint
 
 from api.models.cunik import CunikApi
@@ -12,12 +14,12 @@ def create():
     params = {}
     for item in request.form:
         params[item[0]] = item[1]
-    return jsonify(CunikApi.create(image_name=image_name, params=params))
+    return CunikApi.create(image_name=image_name, params=params)
 
 
 @bp.route('/list', methods=['GET'])
 def list():
-    return jsonify(CunikApi.list())
+    return json.dumps(CunikApi.list())
 
 
 @bp.route('/info', methods=['POST'])

@@ -118,6 +118,10 @@ class Cunik:
     def name(self):
         return self.vm.domain.name()
 
+    @property
+    def status(self):
+        return self.vm.domain.state()
+
     def start(self):
         """Start the cunik."""
         # Start the vm
@@ -212,7 +216,7 @@ class CunikApi:
                 default_conf['data_volume'] = params['data_volume']
         else:
             default_conf['data_volume'] = image_name + '_default'
-        image_name_set = {i.name for i in CunikApi.list()}
+        image_name_set = {CunikApi.info(i)['name'] for i in CunikApi.list()}
         image_name_index = mex(image_name, image_name_set)
         tap_name_set = {i[:-1] for i in os.popen('ifconfig').read().split() if i[-1] == ':'}
         tap_name_index = mex('tap', tap_name_set)
@@ -242,7 +246,7 @@ class CunikApi:
             >>>     print(cunik["name"])
         """
         from api.models.cunik_registry import cunik_registry
-        return [cunik_registry.query(i) for i in cunik_registry.get_id_list()]
+        return list(map(str, cunik_registry.get_id_list()))
 
     @staticmethod
     def info(cid):
@@ -258,7 +262,13 @@ class CunikApi:
             >>> print(cunik["params"]["ipv4_addr"])
         """
         from api.models.cunik_registry import cunik_registry
-        return cunik_registry.query(cid)
+        cunik = cunik_registry.query(cid)
+        cunik_info = {}
+        if cunik is not None:
+            cunik_info["uuid"] = str(cunik.uuid)
+            cunik_info["name"] = cunik.name
+            cunik_info["status"] = cunik.status
+        return json.dumps(cunik_info)
 
     @staticmethod
     def stop(cid):
@@ -269,7 +279,28 @@ class CunikApi:
             >>> CunikApi.stop(id)
         """
         from api.models.cunik_registry import cunik_registry
-        cunik_registry.query(cid).stop()
+        cunik = cunik_registry.query(cid)
+        if cunik is not None:
+            cunik.stop()
+            return 1
+        else:
+            return 0
+
+    @staticmethod
+    def start(cid):
+        """
+        Start a not running cunik.
+        Usage:
+            >>> id = 'acb123'
+            >>> CunikApi.start(id)
+        """
+        from api.models.cunik_registry import cunik_registry
+        cunik = cunik_registry.query(cid)
+        if cunik is not None:
+            cunik.start()
+            return 1
+        else:
+            return 0
 
     @staticmethod
     def remove(cid):
@@ -280,4 +311,9 @@ class CunikApi:
             >>> CunikApi.remove(id)
         """
         from api.models.cunik_registry import cunik_registry
-        cunik_registry.query(cid).destroy()
+        cunik = cunik_registry.query(cid)
+        if cunik is not None:
+            cunik.destroy()
+            return 1
+        else:
+            return 0

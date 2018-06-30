@@ -23,10 +23,10 @@ if 2 in L:
 
 if 3 in L:
     for i in CunikApi.list():
-        CunikApi.stop(i.uuid)
+        CunikApi.stop(i)
     print('stopped')
 
 if 4 in L:
     for i in CunikApi.list():
-        CunikApi.remove(i.uuid)
+        CunikApi.remove(i)
     print('removed')

@@ -28,11 +28,11 @@ print('Time elapsed: {} sec'.format(end_time - start_time - delay_time))
 input('All running')
 
 for i in CunikApi.list():
-    CunikApi.stop(i.uuid)
+    CunikApi.stop(i)
 
 print('All stopped')
 
 for i in CunikApi.list():
-    CunikApi.remove(i.uuid)
+    CunikApi.remove(i)
 
 print('All removed')
