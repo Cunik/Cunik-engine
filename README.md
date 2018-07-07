@@ -67,6 +67,32 @@ python3 engine.py runserver
 
 Actually, we need to be `root` to configure network and manage vm. So run the command line above as `root` or use `sudo`, and use what ever techniques to prevent unexpected damage.
 
+### Start a Cunik and Test It
+
+Use [Cunik-cli](https://github.com/Cunik/Cunik-cli) to start a Cunik. Example:
+
+```
+cunik-cli create nginx 10.0.125.3
+```
+
+**Don't** change **`10.0.125`** since it is hard-coded for now.
+
+Then `curl 10.0.125.3` to see if it works.
+
+Following are the images that you can give it a try:
+
+* nginx
+
+  Runmrun implementation of nginx.
+
+* redis-server
+
+  Rumprun implementation of redis. Test it with `redis-cli -h <address>`.
+
+* redis-server-osv
+
+  OSv implementation of reids. Unable to access for now(we are sure it's online(`nmap`-ed it)). We'd be glad if you can help us fix it.
+
 ## Contributing
 
 (none)
