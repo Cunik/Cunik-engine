@@ -1,5 +1,0 @@
-{
-  "memory": "40960",
-  "hypervisor": "kvm",
-  "data_volume": "rootfs.iso"
-}

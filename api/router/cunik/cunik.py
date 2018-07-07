@@ -1,9 +1,9 @@
 """Take the parameters from router, parse them, execute and return the results."""
 import json
 
-from flask import request, jsonify, Blueprint
-
-from api.models.cunik import CunikApi
+from flask import request, Blueprint
+from api.models import cunik_registry
+from random import randint
 
 bp = Blueprint('cunik', __name__)
 
@@ -14,7 +14,12 @@ def create():
     params = {}
     params['ipv4_addr'] = request.form.get('ipv4_addr')
     print(image_name, params, '=======================')
-    return CunikApi.create(image_name=image_name, params=params)
+    cunik_registry.create(
+        name=image_name + str(randint(0, 1048576)),  # Well, okay for now
+        image_name=image_name,
+        ipv4_addr=params['ipv4_addr'],
+        cmdline=None
+    )
 
 
 @bp.route('/list', methods=['GET'])

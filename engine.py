@@ -1,7 +1,6 @@
 # coding : utf-8
 
 from api import create_app
-from api.models import *
 from flask_script import Manager
 from tests import TestAll
 

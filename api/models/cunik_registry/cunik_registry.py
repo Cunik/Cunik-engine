@@ -1,25 +1,26 @@
 # coding : utf-8
 import json
-import datetime
 import time
 import uuid
-import os
-from api.config import default_config
-from api.utils import ensure_file
-from api.models.cunik import Cunik
+import shutil
+from api.models.cunik import Cunik, CunikConfig
 
 
 class CunikRegistry:
     """Local Cunik registry."""
+    def __init__(self, root):
+        self.root = root
+        self._cuniks = dict()
 
-    def __init__(self, registry_file):
-        if registry_file:
-            ensure_file(default_config.REGISTRY_ROOT, registry_file, content=json.dumps(dict()))
-            self.registry_file = default_config.CUNIK_REGISTRY_FILE
-            with open(self.registry_file) as fp:
-                self._cuniks = self.convert_from_json(fp.read())
-        else:
-            self._cuniks = dict()
+    def create(self, name, image_name, ipv4_addr, cmdline=None):
+        cfg = CunikConfig(name=name, ipv4_addr=ipv4_addr, cmdline=cmdline)
+
+        from ..image_registry import image_registry
+        image = image_registry.get_image(image_name)  # TODO: no error handling for now
+
+        cu = Cunik(image, cfg)
+        self.register(cu)
+        cu.start()
 
     @staticmethod
     def convert_from_json(s: str):
@@ -38,26 +39,24 @@ class CunikRegistry:
                 d[str(k)] = w
         return d
 
-    def save(self):
-        if self.registry_file:
-            with open(self.registry_file, 'w') as fp:
-                json.dump(self.convert_to_json(), fp)
+    def commit(self):
+        pass
 
-    def register(self, cunik):
+    def register(self, cunik: Cunik):
         assert not self.query(cunik.uuid)
         cunik.create_time = time.time()
         self._cuniks[cunik.uuid] = cunik
-        self.save()
+        self.commit()
 
     def remove(self, cunik):
         assert self.query(cunik.uuid)
         self._cuniks.pop(cunik.uuid)
-        self.save()
+        self.commit()
 
     def populate(self, cunik):
         assert self.query(cunik.uuid)
         self._cuniks[cunik.uuid] = cunik
-        self.save()
+        self.commit()
 
     def query(self, cid: uuid.UUID):
         if isinstance(cid, str):
@@ -67,5 +66,11 @@ class CunikRegistry:
     def get_id_list(self):
         return list(self._cuniks.keys())
 
-
-cunik_registry = CunikRegistry(default_config.CUNIK_REGISTRY_FILE)
+    def clear(self):
+        for cu in self._cuniks.values():
+            cu.destroy()
+        self._cuniks.clear()
+        try:
+            shutil.rmtree(self.root)
+        except FileNotFoundError:
+            pass

@@ -19,57 +19,18 @@ class UnknownHypervisorError(Exception):
 class VMConfig:
     """The handy representation of VM configuration.
 
-    Usage:
-        >>> vmc = VMConfig()  # A new VMConfig with default parameters, and key parameters are None
-        >>> vmc.name = 'Cunik0'
-        >>> vmc.kernel_path = './example.img'  # This has to be set
-        >>> vmc.cmdline = './hello_world'  # Command line passed to kernel
-        >>> vmc.memory_size = 1024  # Memory size in KB
-        >>> vmc.vdisk_path = 'disk.iso'  # Virtual disk
-        >>> vmc.nic = 'tap0'  # Network interface card
-        >>> vmc.hypervisor = 'kvm'  # VM type
-        >>> vmc.to_xml()  # Convert to XML for libvirt
-
-    Usage(without standalone kernel):
-        >>> vmc.system_image = './example.qcow'
     """
-    available_hypervisors = ['kvm']
-
-    def __init__(self):
-        self.name = None
-        self.kernel_path = None
-        self.cmdline = None
-        self.memory_size = 1024
-        self.vdisk_path = None
-        self.nic = None
-        self.__hypervisor = None
-
-    @property
-    def hypervisor(self):
-        return self.__hypervisor
-
-    @hypervisor.setter
-    def hypervisor(self, hv):
-        """Set hypervisor type.
-
-        Raises:
-            UnknownHypervisorError
-        """
-        if hv not in self.available_hypervisors:
-            raise UnknownHypervisorError
-        self.__hypervisor = hv
-
-    def __check(self):
-        """Check if non-default parameters have been set.
-            By non-default, I mean that it is None by default and have to be set before generation XML.
-        """
-        if not self.name:
-            print('[ERROR] vm name not set', file=sys.stderr)
-        if not self.hypervisor:
-            print('[ERROR] vm hypervisor not set', file=sys.stderr)
-        if not self.vdisk_path:
-            print('[ERROR] vm vdisk path not set', file=sys.stderr)
-        return all([self.name, self.vdisk_path, self.hypervisor])
+    def __init__(self, name, nic_name=None, kernel_path=None, cmdline=None,
+                 memory_size=4096, vdisk_path=None, vdisk_format='raw',
+                 hypervisor='kvm'):
+        self.name = name
+        self.kernel_path = kernel_path
+        self.cmdline = cmdline
+        self.memory_size = memory_size
+        self.vdisk_path = vdisk_path
+        self.vdisk_format = vdisk_format
+        self.nic_name = nic_name
+        self.hypervisor = hypervisor
 
     def to_xml(self):
         """Generate XML representation for libvirt.
@@ -77,9 +38,6 @@ class VMConfig:
         Raises:
             InvalidVMConfigError
         """
-        if not self.__check():
-            raise InvalidVMConfigError
-
         domain = ET.Element('domain')
         domain.set('type', self.hypervisor)
 
@@ -89,45 +47,51 @@ class VMConfig:
         os = ET.SubElement(domain, 'os')
         tp = ET.SubElement(os, 'type')
         tp.text = 'hvm'
-        if self.kernel_path is not None:
+        if self.kernel_path:
             kernel = ET.SubElement(os, 'kernel')
             kernel.text = self.kernel_path
-        if self.cmdline is not None:
             cmdline = ET.SubElement(os, 'cmdline')
             cmdline.text = 'console=ttyS0 ' + self.cmdline
 
         memory = ET.SubElement(domain, 'memory')
         memory.text = str(self.memory_size)
 
-        # Disks
         devices = ET.SubElement(domain, 'devices')
-        disk = ET.SubElement(devices, 'disk')
-        disk.set('type', 'file')
-        disk.set('device', 'disk')
-        source = ET.SubElement(disk, 'source')
-        source.set('file', self.vdisk_path)
-        target = ET.SubElement(disk, 'target')
-        target.set('dev', 'vda')
-        target.set('bus', 'virtio')
-        driver = ET.SubElement(disk, 'driver')
-        # driver.set('type', 'raw')
-        driver.set('name', 'qemu')
-        readonly = ET.SubElement(disk, 'readonly')  # needed for qemu >= 2.10, for its image locking feature.
+
+        # Disks
+        if self.vdisk_path:
+            disk = ET.SubElement(devices, 'disk')
+            disk.set('type', 'file')
+            disk.set('device', 'disk')
+            source = ET.SubElement(disk, 'source')
+            source.set('file', self.vdisk_path)
+            target = ET.SubElement(disk, 'target')
+            target.set('dev', 'vda')
+            target.set('bus', 'virtio')
+            driver = ET.SubElement(disk, 'driver')
+            driver.set('type', self.vdisk_format)
+            driver.set('name', 'qemu')
+            # readonly = ET.SubElement(disk, 'readonly')  # needed for qemu >= 2.10, for its image locking feature.
 
         # NIC
         # TODO: not recommended by libvirt
-        ethernet = ET.SubElement(devices, 'interface')
-        ethernet.set('type', 'ethernet')
-        target = ET.SubElement(ethernet, 'target')
-        target.set('dev', self.nic)
-        model = ET.SubElement(ethernet, 'model')
-        model.set('type', 'virtio')
-        driver = ET.SubElement(ethernet, 'driver')
-        driver.set('name', 'qemu')
+        if self.nic_name:
+            ethernet = ET.SubElement(devices, 'interface')
+            ethernet.set('type', 'ethernet')
+            target = ET.SubElement(ethernet, 'target')
+            target.set('dev', self.nic_name)
+            model = ET.SubElement(ethernet, 'model')
+            model.set('type', 'virtio')
+            driver = ET.SubElement(ethernet, 'driver')
+            driver.set('name', 'qemu')
 
         # Memballoon not supported, so none
         memballoon = ET.SubElement(devices, 'memballoon')
         memballoon.set('model', 'none')
+
+        # Features
+        features = ET.SubElement(domain, 'features')
+        acpi = ET.SubElement(features, 'acpi')
 
         # For debugging
         serial = ET.SubElement(devices, 'serial')
@@ -161,40 +125,22 @@ class VM:
 
     def __init__(self, config=None):
         # TODO: should we define then start or just create?
-        if config is not None:
-            if config.kernel_path is None or config.cmdline is None:
-                self.config = config
-                self.uuid = '75cb9413-13fd-457d-8e3c-d3dbc1102f80'
-            else:
-                conn = lv.open('')
-                if conn is None:
-                    print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
-                self.domain = conn.defineXML(config.to_xml())
-                self.uuid = self.domain.UUIDString()
-                conn.close()
-                self.config = None
+        conn = lv.open('')
+        if conn is None:
+            print('[ERROR] Failed to open connection to qemu:///system', file=sys.stderr)
+        self.domain = conn.defineXML(config.to_xml())
+        self.uuid = self.domain.UUIDString()
+        conn.close()
 
     def start(self):
         """Start the vm, may raise exception."""
-        if self.config is not None:
-            cmd = '/usr/bin/qemu-system-x86_64 ' \
-                  ' -enable-kvm -nographic -m 1024 ' \
-                  ' -drive file={},if=virtio,cache=none,format=qcow2' \
-                  ' -net tap,script=no,ifname={} -net nic,model=virtio >/dev/null 2>/dev/null &'.format(
-                self.config.vdisk_path,
-                self.config.nic
-                )
-            os.system(cmd)
+        if self.domain.isActive():
+            self.domain.resume()
         else:
-            if self.domain.isActive():
-                self.domain.resume()
-            else:
-                self.domain.create()
+            self.domain.create()
 
     def stop(self):
         # This is necessary because the vm may not be running
-        if self.config is not None:
-            return
         try:
             self.domain.suspend()
         except lv.libvirtError:
@@ -202,14 +148,11 @@ class VM:
 
     def destroy(self):
         # This is necessary because the vm may not be running
-        if self.config is not None:
-            return
+        self.domain.undefine()
         try:
             self.domain.destroy()
-        except lv.libvirtError:
+        except:
             pass
-        finally:
-            self.domain.undefine()
 
     @staticmethod
     def from_json(vm_json: dict):

@@ -1,1 +1,0 @@
---ip=eth0,{{ipv4_addr}},255.255.255.0 --defaultgw=10.0.120.100 {{extra_cmdline}}

@@ -6,3 +6,5 @@ Jinja2==2.10
 libvirt-python==4.3.0
 MarkupSafe==1.0
 Werkzeug==0.14.1
+pyroute2==0.5.2
+

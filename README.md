@@ -32,21 +32,32 @@ By using Cunik, you can:
 
 These instructions will get you running Cunik Engine and a Cunik-nginx on your machine.
 
-First, let's get the source code:
+### Get Source Code
 
 ```shell
 git clone https://github.com/Cunik/Cunik-engine.git
 ```
 
-Then install all the dependencies:
+### Install System Package Dependencies
+
+On Debian, install the following using apt:
+
+* libvirt-daemon-system
+* libvirt-dev
+
+### Install Python Package Dependencies
 
 ```shell
 pip3 install -r requirements.txt
 ```
 
-A Cunik Engine is a daemon that listens on the host and waits for requests from clients. Now, let's launch the Cunik Engine.
+### Create Cunik-Root Manually
 
-Copy `config.py.sample` to `config.py`, and make sure it's correct.
+Cunik intends to load its images and other information from a single folder(`/var/cunik`). For now, you need to create it manually. Get [this](https://www.dropbox.com/s/fgrs238vfp111pn/Cunik-root.tar.gz?dl=0), decompress it, and copy or link to `/var/cunik`.
+
+### Start Cunik-engine
+
+A Cunik Engine is a daemon that listens on the host and waits for requests from clients. Now, let's launch the Cunik Engine.
 
 Run the daemon:
 
@@ -54,7 +65,7 @@ Run the daemon:
 python3 engine.py runserver
 ```
 
-Test the API by sending requests manually.
+Actually, we need to be `root` to configure network and manage vm. So run the command line above as `root` or use `sudo`, and use what ever techniques to prevent unexpected damage.
 
 ## Contributing
 

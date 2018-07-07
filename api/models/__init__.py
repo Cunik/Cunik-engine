@@ -1,10 +1,3 @@
-# coding : utf-8
-
-__all__ = [
-    'Cunik', 'CunikConfig', 'CunikRegistry',
-    'Image', 'ImageRegistry'
-]
-
-from .cunik import Cunik, CunikConfig
-from .cunik_registry import CunikRegistry
-from .image import Image, ImageRegistry
+from .cunik_registry import cunik_registry
+from .image_registry import image_registry
+from .nic_pool import nic_pool

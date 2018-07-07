@@ -1,14 +1,19 @@
 """class Image."""
 
 
+import json
+from os import path
+
+
 class Image:
-    pass
+    def __init__(self, root):
+        self.root = root
 
-class ImageRegistry:
-    """Local image registry, store all the images and its meta info.
-    """
-    def __init__(self):
-        pass
+        # Load json and fill meta information
+        with open(path.join(self.root, 'metadata.json')) as f:
+            metadata = json.load(f)
 
-    def get_image_by_name(self, name: str):
-        pass
+        # Fill main information
+        self.name = metadata['name']
+        self.unikernel = metadata['unikernel']['name']
+        self.default_cmdline = metadata['default_cmdline']

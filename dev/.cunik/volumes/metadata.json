@@ -1,5 +1,0 @@
-{
-  "nginx_default": "nginx/rootfs.iso",
-  "redis-server_default": "redis-server/rootfs.iso",
-  "redis-server-osv_default": "redis-server-osv/system.qcow"
-}
