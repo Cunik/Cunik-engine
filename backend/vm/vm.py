@@ -21,11 +21,12 @@ class VMConfig:
 
     """
     def __init__(self, name, nic_name=None, kernel_path=None, cmdline=None,
-                 memory_size=4096, vdisk_path=None, vdisk_format='raw',
+                 num_cpus=1, memory_size=4096, vdisk_path=None, vdisk_format='raw',
                  hypervisor='kvm'):
         self.name = name
         self.kernel_path = kernel_path
         self.cmdline = cmdline
+        self.num_cpus = num_cpus
         self.memory_size = memory_size
         self.vdisk_path = vdisk_path
         self.vdisk_format = vdisk_format
@@ -52,6 +53,10 @@ class VMConfig:
             kernel.text = self.kernel_path
             cmdline = ET.SubElement(os, 'cmdline')
             cmdline.text = 'console=ttyS0 ' + self.cmdline
+
+        vcpu = ET.SubElement(domain, 'vcpu')
+        vcpu.set('placement', 'static')
+        vcpu.text = str(self.num_cpus)
 
         memory = ET.SubElement(domain, 'memory')
         memory.text = str(self.memory_size)

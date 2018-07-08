@@ -7,7 +7,7 @@ from .imgedit import set_cmdline
 
 
 class OSv:
-    cmdline_template = "--ip=eth0,{ipv4_addr},255.255.255.0 --defaultgw=10.0.125.0 --nameserver=10.0.125.0 {extra_cmdline}"
+    cmdline_template = "--ip=eth0,{ipv4_addr},255.255.255.0 --nameserver=10.0.125.0 {extra_cmdline}"
 
     @staticmethod
     def configure(image, config, nic_name):
@@ -19,6 +19,7 @@ class OSv:
         vmc = VMConfig(
             name=config.name,
             nic_name=nic_name,
+            num_cpus=4,
             vdisk_path=path.join(image.root, 'system.qemu'),
             vdisk_format='qcow2',
             memory_size=1024000

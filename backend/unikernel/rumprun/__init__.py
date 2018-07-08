@@ -35,7 +35,7 @@ class Rumprun:
             cmdline=cmdline,
             nic_name=nic_name,
             vdisk_path=path.join(image.root, 'data.iso'),
-            memory_size=40960
+            memory_size=1024000
         )
         vmc.kernel_path = path.join(image.root, 'kernel.bin')
         return vmc
