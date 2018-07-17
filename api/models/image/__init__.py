@@ -1,1 +1,1 @@
-from .image import *
+from .image import Image

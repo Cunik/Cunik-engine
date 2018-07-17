@@ -11,7 +11,7 @@ volumes_root = os.path.join(default_config.CUNIK_ROOT, 'volumes/nginx')
 
 conf = V.VMConfig()
 conf.name = 'Cunik_by_VM'
-conf.kernel_path = os.path.join(images_root, 'kernel.img')
+conf.kernel_path = os.path.join(images_root, 'kernel.bin')
 conf.cmdline = '''{,,
     "blk" :  {,,
         "source": "dev",,
@@ -30,7 +30,7 @@ conf.cmdline = '''{,,
 },,'''
 conf.memory_size = 256*1024  # 256 MB
 conf.vdisk_path = os.path.join(volumes_root, 'rootfs.iso')
-conf.nic = 'tap0'
+conf.nic_name = 'tap0'
 conf.hypervisor = 'kvm'
 vm = V.VM(conf)
 input('Created!')

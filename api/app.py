@@ -16,5 +16,6 @@ def create_app(config_name='default'):
     for r in routes:
         app.register_blueprint(r.bp, url_prefix=r.prefix)
 
-    return app
+    app.debug = False  #
 
+    return app
