@@ -1,3 +1,4 @@
 #!/bin/sh
 
-sudo mv dev/.cunik /var/cunik
+sudo mkdir /var/cunik
+sudo mkdir /var/cunik/images
